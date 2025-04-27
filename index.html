@@ -309,6 +309,23 @@
             margin-right: 5px;
             margin-bottom: 5px;
         }
+            .note-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .edit-form {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .edit-form.active {
+            display: block;
+        }
 
         /* Responsive Design */
         @media (max-width: 768px) {
@@ -530,6 +547,8 @@
                 <button id="clearNotesBtn">Clear All Notes</button>
             </div>
             <div class="notes-list" id="notesList">
+
+                
                 <!-- Notes will be displayed here -->
             </div>
         </div>
@@ -1036,7 +1055,7 @@
             displayNotes();
         }
 
-        function displayNotes() {
+                function displayNotes() {
             const notesList = document.getElementById('notesList');
             notesList.innerHTML = '';
             
@@ -1053,6 +1072,7 @@
             entries.forEach(entry => {
                 const noteCard = document.createElement('div');
                 noteCard.className = 'note-card';
+                noteCard.dataset.id = entry.id;
                 
                 const noteDate = document.createElement('div');
                 noteDate.className = 'note-date';
@@ -1102,20 +1122,159 @@
                     noteContent.appendChild(attachmentsDiv);
                 }
                 
+                // Add edit/delete buttons
+                const noteActions = document.createElement('div');
+                noteActions.className = 'note-actions';
+                
+                const editBtn = document.createElement('button');
+                editBtn.textContent = 'Edit';
+                editBtn.onclick = () => showEditForm(entry);
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.onclick = () => deleteNote(entry.id);
+                
+                noteActions.appendChild(editBtn);
+                noteActions.appendChild(deleteBtn);
+                
+                // Edit form (initially hidden)
+                const editForm = document.createElement('div');
+                editForm.className = 'edit-form';
+                editForm.innerHTML = `
+                    <h4>Edit Note</h4>
+                    <div class="form-group">
+                        <label>Subject</label>
+                        <select class="edit-subject">
+                            <option value="physics" ${entry.subject === 'physics' ? 'selected' : ''}>Physics</option>
+                            <option value="chemistry" ${entry.subject === 'chemistry' ? 'selected' : ''}>Chemistry</option>
+                            <option value="mathematics" ${entry.subject === 'mathematics' ? 'selected' : ''}>Mathematics</option>
+                            <option value="biology" ${entry.subject === 'biology' ? 'selected' : ''}>Biology</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Topic</label>
+                        <select class="edit-topic" disabled>
+                            <option value="">Select Topic</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>${entry.type === 'progress' ? 'Learnings' : 'Study Goals'}</label>
+                        <textarea class="edit-content" rows="5">${entry.type === 'progress' ? entry.learnings : entry.studyGoals}</textarea>
+                    </div>
+                    ${entry.type === 'progress' ? `
+                    <div class="form-group">
+                        <label>Confidence Level (1-5)</label>
+                        <div class="confidence-rating">
+                            <input type="radio" name="edit-confidence" id="edit-conf1" value="1" ${entry.confidence == 1 ? 'checked' : ''}>
+                            <label for="edit-conf1">1</label>
+                            <input type="radio" name="edit-confidence" id="edit-conf2" value="2" ${entry.confidence == 2 ? 'checked' : ''}>
+                            <label for="edit-conf2">2</label>
+                            <input type="radio" name="edit-confidence" id="edit-conf3" value="3" ${entry.confidence == 3 ? 'checked' : ''}>
+                            <label for="edit-conf3">3</label>
+                            <input type="radio" name="edit-confidence" id="edit-conf4" value="4" ${entry.confidence == 4 ? 'checked' : ''}>
+                            <label for="edit-conf4">4</label>
+                            <input type="radio" name="edit-confidence" id="edit-conf5" value="5" ${entry.confidence == 5 ? 'checked' : ''}>
+                            <label for="edit-conf5">5</label>
+                        </div>
+                    </div>
+                    ` : ''}
+                    <button class="save-edit-btn">Save Changes</button>
+                    <button class="cancel-edit-btn">Cancel</button>
+                `;
+                
+                // Initialize topic dropdown in edit form
+                const editSubject = editForm.querySelector('.edit-subject');
+                const editTopic = editForm.querySelector('.edit-topic');
+                
+                editSubject.addEventListener('change', function() {
+                    editTopic.innerHTML = '<option value="">Select Topic</option>';
+                    editTopic.disabled = !this.value;
+                    
+                    if (this.value) {
+                        topicsDB[this.value].forEach(topic => {
+                            const option = document.createElement('option');
+                            option.value = topic.toLowerCase().replace(/\s+/g, '-');
+                            option.textContent = topic;
+                            option.selected = (topic.toLowerCase().replace(/\s+/g, '-') === entry.topic);
+                            editTopic.appendChild(option);
+                        });
+                    }
+                });
+                
+                // Trigger change event to populate topics
+                editSubject.dispatchEvent(new Event('change'));
+                
+                // Save edit handler
+                editForm.querySelector('.save-edit-btn').addEventListener('click', () => {
+                    saveEditedNote(entry.id, editForm, entry.type);
+                });
+                
+                // Cancel edit handler
+                editForm.querySelector('.cancel-edit-btn').addEventListener('click', () => {
+                    editForm.classList.remove('active');
+                });
+                
                 noteCard.appendChild(noteDate);
                 noteCard.appendChild(noteType);
                 noteCard.appendChild(noteSubject);
                 noteCard.appendChild(noteTopic);
                 noteCard.appendChild(noteContent);
+                noteCard.appendChild(noteActions);
+                noteCard.appendChild(editForm);
                 
                 notesList.appendChild(noteCard);
             });
         }
-
-        function clearAllNotes() {
-            if (confirm('Are you sure you want to delete all notes? This cannot be undone.')) {
-                localStorage.removeItem('studyEntries');
-                displayNotes();
+        
+        function showEditForm(entry) {
+            // Hide all other edit forms
+            document.querySelectorAll('.edit-form').forEach(form => {
+                form.classList.remove('active');
+            });
+            
+            // Show this entry's edit form
+            const noteCard = document.querySelector(`.note-card[data-id="${entry.id}"]`);
+            if (noteCard) {
+                const editForm = noteCard.querySelector('.edit-form');
+                editForm.classList.add('active');
+                noteCard.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        
+        function saveEditedNote(id, editForm, entryType) {
+            const entries = JSON.parse(localStorage.getItem('studyEntries')) || [];
+            const index = entries.findIndex(entry => entry.id === id);
+            
+            if (index !== -1) {
+                const subject = editForm.querySelector('.edit-subject').value;
+                const topic = editForm.querySelector('.edit-topic').value;
+                const content = editForm.querySelector('.edit-content').value;
+                
+                entries[index].subject = subject;
+                entries[index].topic = topic;
+                
+                if (entryType === 'progress') {
+                    entries[index].learnings = content;
+                    entries[index].confidence = parseInt(
+                        editForm.querySelector('input[name="edit-confidence"]:checked').value
+                    );
+                } else {
+                    entries[index].studyGoals = content;
+                }
+                
+                localStorage.setItem('studyEntries', JSON.stringify(entries));
+                editForm.classList.remove('active');
+                displayNotes(); // Refresh the display
+                alert('Note updated successfully!');
+            }
+        }
+        
+        function deleteNote(id) {
+            if (confirm('Are you sure you want to delete this note?')) {
+                const entries = JSON.parse(localStorage.getItem('studyEntries')) || [];
+                const filteredEntries = entries.filter(entry => entry.id !== id);
+                localStorage.setItem('studyEntries', JSON.stringify(filteredEntries));
+                displayNotes(); // Refresh the display
             }
         }
 
