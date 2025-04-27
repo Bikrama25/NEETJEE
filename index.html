@@ -362,6 +362,38 @@
             margin: 10px 0;
         }
 
+        /* Add these new styles for subtopics */
+        .subtopic-container {
+            margin-top: 10px;
+            border-left: 3px solid #3498db;
+            padding-left: 15px;
+        }
+        
+        .subtopic-item {
+            margin-bottom: 8px;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .subtopic-item select {
+            flex-grow: 1;
+        }
+        
+        .add-subtopic {
+            margin-top: 5px;
+            background-color: #2ecc71;
+        }
+        
+        .remove-subtopic {
+            background-color: #e74c3c;
+            padding: 2px 5px;
+            font-size: 12px;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .container {
@@ -384,31 +416,6 @@
             .drawing-canvas {
                 width: 100%;
             }
-        }
-        /* Add these new styles for subtopics */
-        .subtopic-container {
-            margin-top: 10px;
-            border-left: 3px solid #3498db;
-            padding-left: 15px;
-        }
-        
-        .subtopic-item {
-            margin-bottom: 8px;
-            padding: 8px;
-            background-color: #f8f9fa;
-            border-radius: 4px;
-        }
-        
-        .add-subtopic {
-            margin-top: 5px;
-            background-color: #2ecc71;
-        }
-        
-        .remove-subtopic {
-            background-color: #e74c3c;
-            margin-left: 5px;
-            padding: 2px 5px;
-            font-size: 12px;
         }
     </style>
 </head>
@@ -441,10 +448,18 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="topic">Topic</label>
+                    <label for="topic">Main Topic</label>
                     <select id="topic" required disabled>
                         <option value="">Select Topic</option>
                     </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Subtopics Covered</label>
+                    <div id="subtopicsContainer" class="subtopic-container">
+                        <!-- Subtopic items will be added here dynamically -->
+                    </div>
+                    <button type="button" id="addSubtopic" class="add-subtopic">+ Add Subtopic</button>
                 </div>
 
                 <div class="form-group">
@@ -513,6 +528,14 @@
                     <select id="planTopic" required disabled>
                         <option value="">Select Topic</option>
                     </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Subtopics to Cover</label>
+                    <div id="planSubtopicsContainer" class="subtopic-container">
+                        <!-- Subtopic items will be added here dynamically -->
+                    </div>
+                    <button type="button" id="addPlanSubtopic" class="add-subtopic">+ Add Subtopic</button>
                 </div>
 
                 <div class="form-group">
@@ -624,26 +647,26 @@
     <script>
         // Topics database (expand with all NCERT/JEE/NEET topics)
         const topicsDB = {
-            physics: [
-                "Mechanics", "Thermodynamics", "Electromagnetism", 
-                "Optics", "Modern Physics", "Waves", "Electrostatics",
-                "Current Electricity", "Magnetic Effects", "EMI", "AC", "Semiconductors"
-            ],
-            chemistry: [
-                "Physical Chemistry", "Organic Chemistry", "Inorganic Chemistry",
-                "Chemical Bonding", "Thermodynamics", "Equilibrium", "Biomolecules",
-                "Polymers", "Coordination Compounds", "Metallurgy", "p-Block", "d-Block"
-            ],
-            mathematics: [
-                "Algebra", "Calculus", "Coordinate Geometry",
-                "Trigonometry", "Probability", "Vectors", "Matrices",
-                "Complex Numbers", "Differential Equations", "3D Geometry", "Statistics"
-            ],
-            biology: [
-                "Botany", "Zoology", "Cell Biology",
-                "Genetics", "Ecology", "Human Physiology", "Biotechnology",
-                "Plant Physiology", "Reproduction", "Evolution", "Human Health"
-            ]
+            physics: {
+                "mechanics": ["Kinematics", "Dynamics", "Work, Energy & Power", "Rotational Motion"],
+                "thermodynamics": ["Laws of Thermodynamics", "Heat Transfer", "Thermodynamic Processes"],
+                "electromagnetism": ["Electrostatics", "Current Electricity", "Magnetism", "EMI"]
+            },
+            chemistry: {
+                "physical-chemistry": ["Atomic Structure", "Chemical Bonding", "Thermodynamics", "Equilibrium"],
+                "organic-chemistry": ["Basics", "Hydrocarbons", "Functional Groups", "Polymers"],
+                "inorganic-chemistry": ["Periodic Table", "Coordination Compounds", "Metallurgy"]
+            },
+            mathematics: {
+                "algebra": ["Quadratic Equations", "Progressions", "Permutations & Combinations"],
+                "calculus": ["Limits", "Differentiation", "Integration", "Differential Equations"],
+                "coordinate-geometry": ["Straight Lines", "Circles", "Conic Sections"]
+            },
+            biology: {
+                "botany": ["Plant Anatomy", "Photosynthesis", "Plant Growth"],
+                "zoology": ["Animal Kingdom", "Human Physiology", "Evolution"],
+                "cell-biology": ["Cell Structure", "Biomolecules", "Cell Division"]
+            }
         };
 
         // Mnemonics database
@@ -821,6 +844,10 @@
             
             // Show today's tab by default
             document.querySelector('.tab-btn[data-tab="today"]').click();
+            
+            // Check for reminders periodically
+            setInterval(checkReminders, 60000); // Check every minute
+            checkReminders(); // Initial check
         });
 
         function updateDateDisplay() {
@@ -868,14 +895,59 @@
                 topicSelect.disabled = !this.value;
                 
                 if (this.value) {
-                    topicsDB[this.value].forEach(topic => {
+                    Object.keys(topicsDB[this.value]).forEach(topic => {
                         const option = document.createElement('option');
-                        option.value = topic.toLowerCase().replace(/\s+/g, '-');
-                        option.textContent = topic;
+                        option.value = topic;
+                        option.textContent = topic.replace(/-/g, ' ');
                         topicSelect.appendChild(option);
                     });
                 }
             });
+
+            // Subtopic management
+            let subtopics = [];
+            
+            function addSubtopicField() {
+                const container = document.getElementById('subtopicsContainer');
+                const subtopicId = Date.now();
+                
+                const div = document.createElement('div');
+                div.className = 'subtopic-item';
+                div.dataset.id = subtopicId;
+                
+                div.innerHTML = `
+                    <select class="subtopic-select">
+                        <option value="">Select Subtopic</option>
+                        ${topicSelect.value ? 
+                            topicsDB[subjectSelect.value][topicSelect.value].map(st => 
+                                `<option value="${st}">${st}</option>`
+                            ).join('') : ''
+                        }
+                    </select>
+                    <button type="button" class="remove-subtopic">×</button>
+                `;
+                
+                div.querySelector('.remove-subtopic').addEventListener('click', function() {
+                    div.remove();
+                    subtopics = subtopics.filter(st => st.id !== subtopicId);
+                });
+                
+                div.querySelector('.subtopic-select').addEventListener('change', function() {
+                    const existing = subtopics.find(st => st.id === subtopicId);
+                    if (existing) {
+                        existing.name = this.value;
+                    } else {
+                        subtopics.push({
+                            id: subtopicId,
+                            name: this.value
+                        });
+                    }
+                });
+                
+                container.appendChild(div);
+            }
+
+            document.getElementById('addSubtopic').addEventListener('click', addSubtopicField);
 
             // Attachment handling
             const uploadBtn = document.getElementById('uploadBtn');
@@ -956,35 +1028,27 @@
             document.getElementById('progressForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 
-                const subject = subjectSelect.value;
-                const topic = topicSelect.value;
-                const learnings = document.getElementById('learnings').value;
-                const confidence = document.querySelector('input[name="confidence"]:checked').value;
-                
-                // Get drawing data if available
                 const canvas = this.querySelector('.drawing-canvas');
-                let drawingData = null;
-                if (canvas && !canvas.isEmpty()) {
-                    drawingData = canvas.toDataURL();
-                }
+                const drawingData = !isCanvasEmpty(canvas) ? canvas.toDataURL('image/png') : null;
                 
-                // Save to localStorage
                 const entry = {
                     id: Date.now(),
                     type: 'progress',
                     date: new Date().toISOString(),
-                    subject,
-                    topic,
-                    learnings,
-                    confidence,
-                    attachments,
+                    subject: subjectSelect.value,
+                    topic: topicSelect.value,
+                    subtopics: subtopics.filter(st => st.name), // Only include selected subtopics
+                    learnings: document.getElementById('learnings').value,
+                    confidence: document.querySelector('input[name="confidence"]:checked').value,
+                    attachments: [...attachments],
                     drawing: drawingData
                 };
                 
                 saveEntry(entry);
-                
-                alert('Progress saved successfully!');
+                alert('Progress saved with subtopics!');
                 this.reset();
+                subtopics = [];
+                document.getElementById('subtopicsContainer').innerHTML = '';
                 attachments = [];
                 previewArea.innerHTML = '';
                 displayNotes();
@@ -1000,14 +1064,59 @@
                 topicSelect.disabled = !this.value;
                 
                 if (this.value) {
-                    topicsDB[this.value].forEach(topic => {
+                    Object.keys(topicsDB[this.value]).forEach(topic => {
                         const option = document.createElement('option');
-                        option.value = topic.toLowerCase().replace(/\s+/g, '-');
-                        option.textContent = topic;
+                        option.value = topic;
+                        option.textContent = topic.replace(/-/g, ' ');
                         topicSelect.appendChild(option);
                     });
                 }
             });
+
+            // Subtopic management for plan
+            let planSubtopics = [];
+            
+            function addPlanSubtopicField() {
+                const container = document.getElementById('planSubtopicsContainer');
+                const subtopicId = Date.now();
+                
+                const div = document.createElement('div');
+                div.className = 'subtopic-item';
+                div.dataset.id = subtopicId;
+                
+                div.innerHTML = `
+                    <select class="subtopic-select">
+                        <option value="">Select Subtopic</option>
+                        ${topicSelect.value ? 
+                            topicsDB[subjectSelect.value][topicSelect.value].map(st => 
+                                `<option value="${st}">${st}</option>`
+                            ).join('') : ''
+                        }
+                    </select>
+                    <button type="button" class="remove-subtopic">×</button>
+                `;
+                
+                div.querySelector('.remove-subtopic').addEventListener('click', function() {
+                    div.remove();
+                    planSubtopics = planSubtopics.filter(st => st.id !== subtopicId);
+                });
+                
+                div.querySelector('.subtopic-select').addEventListener('change', function() {
+                    const existing = planSubtopics.find(st => st.id === subtopicId);
+                    if (existing) {
+                        existing.name = this.value;
+                    } else {
+                        planSubtopics.push({
+                            id: subtopicId,
+                            name: this.value
+                        });
+                    }
+                });
+                
+                container.appendChild(div);
+            }
+
+            document.getElementById('addPlanSubtopic').addEventListener('click', addPlanSubtopicField);
 
             // Attachment handling
             const uploadBtn = document.getElementById('planUploadBtn');
@@ -1022,45 +1131,95 @@
             uploadBtn.addEventListener('click', () => fileInput.click());
             
             fileInput.addEventListener('change', function() {
-                Array.from(this.files).forEach(file => {
-                    if (file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            planAttachments.push(e.target.result);
-                            displayPlanAttachments();
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                });
-            });
-            
-            cameraBtn.addEventListener('click', async function() {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    cameraView.srcObject = stream;
-                    cameraView.style.display = 'block';
-                    captureBtn.style.display = 'block';
-                    cameraBtn.style.display = 'none';
-                } catch (err) {
-                    alert('Could not access camera: ' + err.message);
-                }
-            });
-            
-            captureBtn.addEventListener('click', function() {
-                const canvas = document.createElement('canvas');
-                canvas.width = cameraView.videoWidth;
-                canvas.height = cameraView.videoHeight;
-                canvas.getContext('2d').drawImage(cameraView, 0, 0);
+    if (this.files && this.files.length > 0) {
+        Array.from(this.files).forEach(file => {
+            // Check if file is an image and within size limit (e.g., 5MB)
+            if (file.type.startsWith('image/') && file.size <= 5 * 1024 * 1024) {
+                const reader = new FileReader();
                 
-                planAttachments.push(canvas.toDataURL('image/jpeg'));
-                displayPlanAttachments();
+                reader.onload = function(e) {
+                    planAttachments.push({
+                        type: 'upload',
+                        data: e.target.result,
+                        name: file.name,
+                        size: file.size
+                    });
+                    displayPlanAttachments();
+                };
                 
-                // Stop camera
-                cameraView.srcObject.getTracks().forEach(track => track.stop());
-                cameraView.style.display = 'none';
-                captureBtn.style.display = 'none';
-                cameraBtn.style.display = 'block';
-            });
+                reader.onerror = function() {
+                    console.error('Error reading file:', file.name);
+                    alert(`Error reading file ${file.name}. Please try another file.`);
+                };
+                
+                reader.readAsDataURL(file);
+            } else if (!file.type.startsWith('image/')) {
+                alert(`File ${file.name} is not an image. Only image files are supported.`);
+            } else {
+                alert(`File ${file.name} is too large. Maximum size is 5MB.`);
+            }
+        });
+        
+        // Reset the input to allow selecting the same file again
+        this.value = '';
+    }
+});
+
+
+
+
+
+
+
+cameraBtn.addEventListener('click', async function() {
+    try {
+        // First check if we already have a stream running
+        if (cameraView.srcObject) {
+            cameraView.srcObject.getTracks().forEach(track => track.stop());
+        }
+        
+        // Request camera access
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: {
+                facingMode: 'environment', // Prefer rear camera
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
+            audio: false
+        });
+        
+        cameraView.srcObject = stream;
+        cameraView.style.display = 'block';
+        captureBtn.style.display = 'block';
+        cameraBtn.style.display = 'none';
+        
+        // Add event listener for when the camera stream ends
+        cameraView.onended = function() {
+            cameraBtn.style.display = 'block';
+            captureBtn.style.display = 'none';
+            cameraView.style.display = 'none';
+        };
+        
+    } catch (err) {
+        console.error('Camera error:', err);
+        
+        // More specific error messages
+        if (err.name === 'NotAllowedError') {
+            alert('Camera access was denied. Please allow camera access to use this feature.');
+        } else if (err.name === 'NotFoundError') {
+            alert('No camera found on this device.');
+        } else if (err.name === 'NotReadableError') {
+            alert('Camera is already in use by another application.');
+        } else {
+            alert('Could not access camera: ' + err.message);
+        }
+        
+        // Ensure UI is reset on error
+        cameraBtn.style.display = 'block';
+        captureBtn.style.display = 'none';
+        cameraView.style.display = 'none';
+    }
+});
             
             function displayPlanAttachments() {
                 previewArea.innerHTML = '';
@@ -1088,31 +1247,26 @@
             document.getElementById('planForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 
-                const subject = subjectSelect.value;
-                const topic = topicSelect.value;
-                const studyGoals = document.getElementById('studyGoals').value;
-                
-                // Get drawing data if available
                 const canvas = this.querySelector('.drawing-canvas');
-                let drawingData = null;
-                if (canvas && !canvas.isEmpty()) {
-                    drawingData = canvas.toDataURL();
-                }
+                const drawingData = !isCanvasEmpty(canvas) ? canvas.toDataURL('image/png') : null;
                 
                 const entry = {
                     id: Date.now(),
                     type: 'plan',
                     date: new Date().toISOString(),
-                    subject,
-                    topic,
-                    studyGoals,
-                    attachments: planAttachments,
+                    subject: subjectSelect.value,
+                    topic: topicSelect.value,
+                    subtopics: planSubtopics.filter(st => st.name),
+                    studyGoals: document.getElementById('studyGoals').value,
+                    attachments: [...planAttachments],
                     drawing: drawingData
                 };
                 
                 saveEntry(entry);
                 alert('Study plan saved successfully!');
                 this.reset();
+                planSubtopics = [];
+                document.getElementById('planSubtopicsContainer').innerHTML = '';
                 planAttachments = [];
                 previewArea.innerHTML = '';
                 displayNotes();
@@ -1123,56 +1277,6 @@
             let entries = JSON.parse(localStorage.getItem('studyEntries')) || [];
             entries.push(entry);
             localStorage.setItem('studyEntries', JSON.stringify(entries));
-        }
-
-        function setupCalculator() {
-            const calculator = new Calculator();
-            const numberButtons = document.querySelectorAll('[data-number]');
-            const operationButtons = document.querySelectorAll('[data-operation]');
-            const equalsButton = document.querySelector('[data-equals]');
-            const deleteButton = document.querySelector('[data-delete]');
-            const allClearButton = document.querySelector('[data-all-clear]');
-            const decimalButton = document.querySelector('[data-decimal]');
-
-            numberButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    calculator.appendNumber(button.textContent);
-                    calculator.updateDisplay();
-                });
-            });
-
-            operationButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    calculator.handleOperation(button.textContent);
-                    calculator.updateDisplay();
-                });
-            });
-
-            equalsButton.addEventListener('click', () => {
-                calculator.compute();
-                calculator.updateDisplay();
-            });
-
-            allClearButton.addEventListener('click', () => {
-                calculator.clear();
-                calculator.updateDisplay();
-            });
-
-            deleteButton.addEventListener('click', () => {
-                calculator.delete();
-                calculator.updateDisplay();
-            });
-
-            decimalButton.addEventListener('click', () => {
-                calculator.appendDecimal();
-                calculator.updateDisplay();
-            });
-        }
-
-        function setupNotesSection() {
-            document.getElementById('generatePdfBtn').addEventListener('click', generatePDF);
-            document.getElementById('clearNotesBtn').addEventListener('click', clearAllNotes);
-            displayNotes();
         }
 
         function displayNotes() {
@@ -1199,7 +1303,7 @@
                 noteDate.textContent = new Date(entry.date).toLocaleString();
                 
                 const noteType = document.createElement('div');
-                                noteType.className = 'note-subject';
+                noteType.className = 'note-subject';
                 noteType.textContent = entry.type === 'progress' ? 'Progress' : 'Plan';
                 
                 const noteSubject = document.createElement('div');
@@ -1226,6 +1330,19 @@
                     const goals = document.createElement('p');
                     goals.textContent = entry.studyGoals;
                     noteContent.appendChild(goals);
+                }
+                
+                // Add subtopics if available
+                if (entry.subtopics && entry.subtopics.length > 0) {
+                    const subtopicsDiv = document.createElement('div');
+                    subtopicsDiv.className = 'note-subtopics';
+                    subtopicsDiv.innerHTML = `
+                        <strong>Subtopics:</strong>
+                        <ul>
+                            ${entry.subtopics.map(st => `<li>${st.name}</li>`).join('')}
+                        </ul>
+                    `;
+                    noteContent.appendChild(subtopicsDiv);
                 }
                 
                 // Add drawing if available
@@ -1322,11 +1439,11 @@
                     editTopic.disabled = !this.value;
                     
                     if (this.value) {
-                        topicsDB[this.value].forEach(topic => {
+                        Object.keys(topicsDB[this.value]).forEach(topic => {
                             const option = document.createElement('option');
-                            option.value = topic.toLowerCase().replace(/\s+/g, '-');
-                            option.textContent = topic;
-                            option.selected = (topic.toLowerCase().replace(/\s+/g, '-') === entry.topic);
+                            option.value = topic;
+                            option.textContent = topic.replace(/-/g, ' ');
+                            option.selected = (topic === entry.topic);
                             editTopic.appendChild(option);
                         });
                     }
@@ -1467,6 +1584,18 @@
                         y += 7;
                     });
                     
+                    // Add subtopics if available
+                    if (entry.subtopics && entry.subtopics.length > 0) {
+                        y += 5;
+                        doc.text('Subtopics:', 10, y);
+                        y += 7;
+                        
+                        entry.subtopics.forEach(subtopic => {
+                            doc.text(`- ${subtopic.name}`, 15, y);
+                            y += 7;
+                        });
+                    }
+                    
                     // Add drawing if available
                     if (entry.drawing) {
                         y += 5;
@@ -1536,14 +1665,22 @@
         function setupResources() {
             const topicSelect = document.getElementById('resourceTopic');
             
-            // Populate topic dropdown
+            // Populate topic dropdown with subjects and topics
             for (const subject in topicsDB) {
-                topicsDB[subject].forEach(topic => {
+                for (const topic in topicsDB[subject]) {
                     const option = document.createElement('option');
-                    option.value = `${subject}-${topic.toLowerCase().replace(/\s+/g, '-')}`;
-                    option.textContent = `${subject.charAt(0).toUpperCase() + subject.slice(1)}: ${topic}`;
+                    option.value = `${subject}-${topic}`;
+                    option.textContent = `${subject.charAt(0).toUpperCase() + subject.slice(1)}: ${topic.replace(/-/g, ' ')}`;
                     topicSelect.appendChild(option);
-                });
+                    
+                    // Add subtopic options
+                    topicsDB[subject][topic].forEach(subtopic => {
+                        const subOption = document.createElement('option');
+                        subOption.value = `${subject}-${topic}-${subtopic.toLowerCase().replace(/\s+/g, '-')}`;
+                        subOption.textContent = `↳ ${subtopic}`;
+                        topicSelect.appendChild(subOption);
+                    });
+                }
             }
             
             // Handle topic selection
@@ -1555,28 +1692,80 @@
                 });
                 
                 if (this.value) {
-                    const [subject, topic] = this.value.split('-');
+                    const parts = this.value.split('-');
+                    const subject = parts[0];
                     const resourcesDiv = document.getElementById(`${subject}Resources`);
                     
-                    // Add mnemonics
-                    if (mnemonicsDB[subject] && mnemonicsDB[subject][topic]) {
-                        const mnemonicSection = document.createElement('div');
-                        mnemonicSection.className = 'resource-highlight';
-                        mnemonicSection.innerHTML = `<h4>Mnemonics for ${topic.replace(/-/g, ' ')}</h4>`;
+                    if (parts.length === 3) {
+                        // Subtopic was selected
+                        const topic = parts[1];
+                        const subtopic = parts[2].replace(/-/g, ' ');
                         
-                        const mnemonicList = document.createElement('ul');
-                        mnemonicsDB[subject][topic].forEach(mnemonic => {
-                            const item = document.createElement('li');
-                            item.textContent = mnemonic;
-                            mnemonicList.appendChild(item);
-                        });
+                        // Add mnemonics for this subtopic if available
+                        if (mnemonicsDB[subject] && mnemonicsDB[subject][topic]) {
+                            const mnemonicSection = document.createElement('div');
+                            mnemonicSection.className = 'resource-highlight';
+                            mnemonicSection.innerHTML = `<h4>Mnemonics for ${subtopic}</h4>`;
+                            
+                            const mnemonicList = document.createElement('ul');
+                            // Filter mnemonics that mention this subtopic
+                            const relevantMnemonics = mnemonicsDB[subject][topic].filter(m => 
+                                m.toLowerCase().includes(subtopic.toLowerCase()));
+                            
+                            if (relevantMnemonics.length > 0) {
+                                relevantMnemonics.forEach(mnemonic => {
+                                    const item = document.createElement('li');
+                                    item.textContent = mnemonic;
+                                    mnemonicList.appendChild(item);
+                                });
+                                mnemonicSection.appendChild(mnemonicList);
+                                resourcesDiv.appendChild(mnemonicSection);
+                            }
+                        }
                         
-                        mnemonicSection.appendChild(mnemonicList);
-                        resourcesDiv.appendChild(mnemonicSection);
+                        // Add other resources specific to this subtopic
+                        const resourceItem = document.createElement('div');
+                        resourceItem.className = 'resource-item';
+                        resourceItem.innerHTML = `
+                            <h4>Resources for ${subtopic}</h4>
+                            <p>Focus on NCERT concepts and practice previous year questions.</p>
+                            <p>Recommended YouTube channels: Physics Wallah, Unacademy NEET</p>
+                        `;
+                        resourcesDiv.appendChild(resourceItem);
+                    } else {
+                        // Main topic was selected
+                        const topic = parts[1].replace(/-/g, ' ');
+                        
+                        // Add mnemonics for this topic if available
+                        if (mnemonicsDB[subject] && mnemonicsDB[subject][parts[1]]) {
+                            const mnemonicSection = document.createElement('div');
+                            mnemonicSection.className = 'resource-highlight';
+                            mnemonicSection.innerHTML = `<h4>Mnemonics for ${topic}</h4>`;
+                            
+                            const mnemonicList = document.createElement('ul');
+                            mnemonicsDB[subject][parts[1]].forEach(mnemonic => {
+                                const item = document.createElement('li');
+                                item.textContent = mnemonic;
+                                mnemonicList.appendChild(item);
+                            });
+                            
+                            mnemonicSection.appendChild(mnemonicList);
+                            resourcesDiv.appendChild(mnemonicSection);
+                        }
+                        
+                        // Add general resources for this topic
+                        const resourceItem = document.createElement('div');
+                        resourceItem.className = 'resource-item';
+                        resourceItem.innerHTML = `
+                            <h4>Study Resources for ${topic}</h4>
+                            <p><strong>NCERT Focus:</strong> Chapters ${topic === 'mechanics' ? '4-8' : 
+                                topic === 'thermodynamics' ? '11-12' : 'All relevant chapters'}</p>
+                            <p><strong>Reference Books:</strong> ${subject === 'physics' ? 'HC Verma' : 
+                                subject === 'chemistry' ? 'OP Tondon' : 'RD Sharma'}</p>
+                            <p><strong>Practice:</strong> Solve at least 50 MCQs on this topic</p>
+                        `;
+                        resourcesDiv.appendChild(resourceItem);
                     }
-                    
-                    // Add other resources (charts, tricky questions)
-                    // You would add these based on your database
                     
                     resourcesDiv.classList.add('active');
                 }
@@ -1658,25 +1847,14 @@
                 canvas.closest('.form-group').querySelector('.clear-canvas').addEventListener('click', () => {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                 });
-                
-                // Save button - converts to image and stores with form
-                canvas.closest('.form-group').querySelector('.save-canvas').addEventListener('click', () => {
-                    // This will be handled when the form is submitted
-                });
-                
-                // Add method to check if canvas is empty
-                canvas.isEmpty = function() {
-                    const blank = document.createElement('canvas');
-                    blank.width = canvas.width;
-                    blank.height = canvas.height;
-                    return canvas.toDataURL() === blank.toDataURL();
-                };
-                
-                // Add method to get data URL
-                canvas.toDataURL = function(type = 'image/png', quality) {
-                    return this.getContext('2d').canvas.toDataURL(type, quality);
-                };
             });
+        }
+
+        function isCanvasEmpty(canvas) {
+            const blank = document.createElement('canvas');
+            blank.width = canvas.width;
+            blank.height = canvas.height;
+            return canvas.toDataURL() === blank.toDataURL();
         }
 
         // Check for revision reminders periodically
