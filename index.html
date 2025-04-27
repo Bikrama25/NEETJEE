@@ -1434,7 +1434,118 @@ function setupTabs() {
         });
     });
 }
+// Add this function to handle Google Drive resources
+async function fetchGoogleDriveResources(subject, topic, subtopic) {
+    // This is a placeholder - you'll need to implement your actual Google Drive API integration
+    try {
+        // In a real implementation, you would:
+        // 1. Authenticate with Google Drive API
+        // 2. Query files based on subject/topic/subtopic
+        // 3. Return the file information
+        
+        // Mock response for demonstration
+        const mockResources = {
+            'physics-mechanics': [
+                {
+                    name: 'Mechanics Formulas.pdf',
+                    url: 'https://drive.google.com/file/d/YOUR_FILE_ID/view',
+                    type: 'pdf',
+                    size: '2.4 MB'
+                },
+                {
+                    name: 'Kinematics Explained.mp4',
+                    url: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/view',
+                    type: 'video',
+                    size: '25 MB'
+                }
+            ],
+            // Add more mock resources as needed
+        };
+        
+        const resourceKey = `${subject}-${topic}`;
+        return mockResources[resourceKey] || [];
+        
+    } catch (error) {
+        console.error('Error fetching Google Drive resources:', error);
+        return [];
+    }
+}
 
+// Modify the resource display section to include Google Drive resources
+function setupResources() {
+    // ... (previous setup code)
+    
+    topicSelect.addEventListener('change', async function() {
+        // ... (previous change handler code)
+        
+        if (this.value) {
+            const parts = this.value.split('-');
+            const subject = parts[0];
+            const topic = parts[1];
+            const subtopic = parts.length > 2 ? parts[2] : null;
+            const resourcesDiv = document.getElementById(`${subject}Resources`);
+            
+            // Add loading indicator
+            resourcesDiv.innerHTML = '<div class="loading-resources">Loading resources...</div>';
+            resourcesDiv.classList.add('active');
+            
+            // 1. Add standard resources
+            const resourceItem = document.createElement('div');
+            resourceItem.className = 'resource-item';
+            resourceItem.innerHTML = `
+                <h4><i class="fas fa-book"></i> Study Resources</h4>
+                <p><i class="fas fa-book-open"></i> <strong>NCERT Focus:</strong> Relevant chapters</p>
+                <p><i class="fas fa-tasks"></i> <strong>Practice:</strong> Recommended problems</p>
+            `;
+            resourcesDiv.appendChild(resourceItem);
+            
+            // 2. Add Google Drive resources
+            try {
+                const driveResources = await fetchGoogleDriveResources(subject, topic, subtopic);
+                if (driveResources.length > 0) {
+                    const driveSection = document.createElement('div');
+                    driveSection.className = 'resource-highlight';
+                    driveSection.innerHTML = `<h4><i class="fab fa-google-drive"></i> Google Drive Resources</h4>`;
+                    
+                    const resourceList = document.createElement('div');
+                    resourceList.className = 'resource-list';
+                    
+                    driveResources.forEach(resource => {
+                        const item = document.createElement('div');
+                        item.className = 'resource-item';
+                        
+                        if (resource.type === 'pdf') {
+                            item.innerHTML = `
+                                <a href="${resource.url}" target="_blank" class="resource-link">
+                                    <i class="fas fa-file-pdf"></i> ${resource.name}
+                                </a>
+                                <span class="resource-size">${resource.size}</span>
+                            `;
+                        } else if (resource.type === 'video') {
+                            item.innerHTML = `
+                                <div class="video-resource">
+                                    <a href="${resource.url}" target="_blank" class="resource-link">
+                                        <i class="fas fa-video"></i> ${resource.name}
+                                    </a>
+                                    <span class="resource-size">${resource.size}</span>
+                                </div>
+                            `;
+                        }
+                        
+                        resourceList.appendChild(item);
+                    });
+                    
+                    driveSection.appendChild(resourceList);
+                    resourcesDiv.appendChild(driveSection);
+                }
+            } catch (error) {
+                console.error('Error loading Google Drive resources:', error);
+            }
+            
+            // ... (rest of your resource loading code)
+        }
+    });
+}
 function setupProgressForm() {
     const subjectSelect = document.getElementById('subject');
     const topicSelect = document.getElementById('topic');
