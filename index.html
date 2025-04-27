@@ -346,6 +346,39 @@
                 grid-template-columns: 1fr;
             }
         }
+                /* Touch writing styles */
+        .drawing-canvas {
+            border: 1px solid #ddd;
+            background: white;
+            margin-top: 10px;
+            touch-action: none;
+        }
+        
+        .canvas-container {
+            margin: 15px 0;
+        }
+        
+        .canvas-controls button {
+            margin-right: 10px;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        /* Improved resources display */
+        .topic-resources {
+            display: none;
+        }
+        
+        .topic-resources.active {
+            display: block;
+        }
+        
+        .resource-highlight {
+            background-color: #fffde7;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -461,20 +494,177 @@
             </form>
         </div>
 
-        <div class="tab-content" id="resources">
-            <div class="resource-category">
-                <h3>Mnemonics</h3>
-                <div class="resource-item">
-                    <h4>Periodic Table Groups</h4>
-                    <p><strong>Group 1 (Alkali Metals):</strong> LiNa Ki Ruby Cse Friendship</p>
-                    <p>Li (Lithium), Na (Sodium), K (Potassium), Rb (Rubidium), Cs (Caesium), Fr (Francium)</p>
-                </div>
-                <div class="resource-item">
-                    <h4>Cranial Nerves</h4>
-                    <p><strong>On Old Olympus's Towering Tops, A Finn And German Viewed Some Hops</strong></p>
-                    <p>Olfactory, Optic, Oculomotor, Trochlear, Trigeminal, Abducens, Facial, Auditory, Glossopharyngeal, Vagus, Spinal Accessory, Hypoglossal</p>
-                </div>
-            </div>
+    <div class="tab-content" id="resources">
+        <div class="form-group">
+            <label for="resourceTopic">Select Topic to View Resources</label>
+            <select id="resourceTopic">
+                <option value="">-- Select a Topic --</option>
+                <!-- Options will be populated by JavaScript -->
+            </select>
+        </div>
+        
+        <div id="physicsResources" class="topic-resources">
+            <!-- Physics resources will be shown here -->
+        </div>
+        
+        <div id="chemistryResources" class="topic-resources">
+            <!-- Chemistry resources will be shown here -->
+        </div>
+        
+        <div id="mathematicsResources" class="topic-resources">
+            <!-- Math resources will be shown here -->
+        </div>
+        
+        <div id="biologyResources" class="topic-resources">
+            <!-- Biology resources will be shown here -->
+        </div>
+    </div>
+
+    <!-- Add this to the progress and plan forms -->
+    <div class="form-group">
+        <label>Handwritten Notes (Draw below)</label>
+        <div class="canvas-container">
+            <canvas class="drawing-canvas" width="500" height="200"></canvas>
+        </div>
+        <div class="canvas-controls">
+            <button class="clear-canvas">Clear</button>
+            <button class="save-canvas">Save Drawing</button>
+        </div>
+    </div>
+
+    <script>
+        // Previous code remains until resources setup
+        
+        // Enhanced mnemonics database with all topics
+        const mnemonicsDB = {
+            physics: {
+                "mechanics": [
+                    "Newton's Laws: 1) Inertia, 2) F=ma, 3) Action-Reaction",
+                    "Projectile Motion: Remember 'UP' - Uₓ is constant, Pₓ = Pᵧ at 45°"
+                ],
+                "thermodynamics": [
+                    "Laws of Thermodynamics: 'You can't win, you can't break even, you can't leave the game'",
+                    "Entropy: 'Disorder increases when you don't clean your room'"
+                ]
+                // Add all physics topics...
+            },
+            chemistry: {
+                "periodic-table": [
+                    "Group 1: LiNa Ki Ruby Cse Friendship (Li, Na, K, Rb, Cs, Fr)",
+                    "Noble Gases: He Never Argues; Kr Xe Rolls (He, Ne, Ar, Kr, Xe, Rn)"
+                ],
+                "chemical-bonding": [
+                    "Bond Types: 'Ionic bonds transfer, covalent bonds share'",
+                    "VSEPR Shapes: 'Linear, Trigonal, Tetrahedral - 2, 3, 4 clouds'"
+                ]
+                // Add all chemistry topics...
+            }
+            // Add all subjects...
+        };
+
+        // Initialize touch drawing canvases
+        function setupDrawingCanvases() {
+            document.querySelectorAll('.drawing-canvas').forEach(canvas => {
+                const signaturePad = new SignaturePad(canvas, {
+                    backgroundColor: 'rgb(255, 255, 255)',
+                    penColor: 'rgb(0, 0, 0)'
+                });
+                
+                // Set appropriate touch behavior
+                canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                }, { passive: false });
+                
+                // Clear button
+                canvas.closest('.form-group').querySelector('.clear-canvas').addEventListener('click', () => {
+                    signaturePad.clear();
+                });
+                
+                // Save button - converts to image and stores with form
+                canvas.closest('.form-group').querySelector('.save-canvas').addEventListener('click', () => {
+                    if (signaturePad.isEmpty()) {
+                        alert('Please draw something first');
+                    } else {
+                        const dataURL = signaturePad.toDataURL();
+                        // This would be saved with your form data
+                        console.log('Saved drawing:', dataURL);
+                        alert('Drawing saved! (Check console for output)');
+                    }
+                });
+            });
+        }
+        
+        // Enhanced resources setup
+        function setupResources() {
+            const topicSelect = document.getElementById('resourceTopic');
+            
+            // Populate topic dropdown
+            for (const subject in topicsDB) {
+                topicsDB[subject].forEach(topic => {
+                    const option = document.createElement('option');
+                    option.value = `${subject}-${topic.toLowerCase().replace(/\s+/g, '-')}`;
+                    option.textContent = `${subject.charAt(0).toUpperCase() + subject.slice(1)}: ${topic}`;
+                    topicSelect.appendChild(option);
+                });
+            }
+            
+            // Handle topic selection
+            topicSelect.addEventListener('change', function() {
+                // Hide all resource sections
+                document.querySelectorAll('.topic-resources').forEach(div => {
+                    div.classList.remove('active');
+                    div.innerHTML = '';
+                });
+                
+                if (this.value) {
+                    const [subject, topic] = this.value.split('-');
+                    const resourcesDiv = document.getElementById(`${subject}Resources`);
+                    
+                    // Add mnemonics
+                    if (mnemonicsDB[subject] && mnemonicsDB[subject][topic]) {
+                        const mnemonicSection = document.createElement('div');
+                        mnemonicSection.className = 'resource-highlight';
+                        mnemonicSection.innerHTML = `<h4>Mnemonics for ${topic.replace(/-/g, ' ')}</h4>`;
+                        
+                        const mnemonicList = document.createElement('ul');
+                        mnemonicsDB[subject][topic].forEach(mnemonic => {
+                            const item = document.createElement('li');
+                            item.textContent = mnemonic;
+                            mnemonicList.appendChild(item);
+                        });
+                        
+                        mnemonicSection.appendChild(mnemonicList);
+                        resourcesDiv.appendChild(mnemonicSection);
+                    }
+                    
+                    // Add other resources (charts, tricky questions)
+                    // You would add these based on your database
+                    
+                    resourcesDiv.classList.add('active');
+                }
+            });
+        }
+        
+        // Update DOMContentLoaded to include new setups
+        document.addEventListener('DOMContentLoaded', function() {
+            // Previous initializations...
+            setupDrawingCanvases();
+            setupResources();
+        });
+        
+        // When saving forms, include the canvas data
+        function getFormDataWithDrawing(form) {
+            const formData = {
+                // Your existing form data
+            };
+            
+            const canvas = form.querySelector('.drawing-canvas');
+            if (canvas && !SignaturePad.getInstance(canvas).isEmpty()) {
+                formData.drawing = SignaturePad.getInstance(canvas).toDataURL();
+            }
+            
+            return formData;
+        }
 
             <div class="resource-category">
                 <h3>Charts & Diagrams</h3>
