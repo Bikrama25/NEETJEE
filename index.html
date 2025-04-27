@@ -5,12 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEET/JEE Progress Tracker</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* Base Styles */
+        :root {
+            --primary: #3498db;
+            --primary-dark: #2980b9;
+            --secondary: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --gray: #95a5a6;
+            --light-gray: #bdc3c7;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
-            color: #333;
+            color: var(--dark);
             background-color: #f5f7fa;
             margin: 0;
             padding: 0;
@@ -25,15 +44,20 @@
         header {
             text-align: center;
             margin-bottom: 30px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         h1 {
-            color: #2c3e50;
+            color: var(--dark);
             margin-bottom: 5px;
+            font-size: 2.2rem;
         }
 
         .date-display {
-            color: #7f8c8d;
+            color: var(--gray);
             font-size: 1.1em;
         }
 
@@ -43,31 +67,49 @@
             border-bottom: 1px solid #ddd;
             margin-bottom: 20px;
             flex-wrap: wrap;
+            background-color: white;
+            border-radius: 10px 10px 0 0;
+            padding: 0 15px;
         }
 
         .tab-btn {
-            padding: 10px 20px;
+            padding: 12px 20px;
             background: none;
             border: none;
             cursor: pointer;
             font-size: 16px;
-            color: #7f8c8d;
+            color: var(--gray);
             border-bottom: 3px solid transparent;
             transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
         }
 
         .tab-btn.active {
-            color: #3498db;
-            border-bottom-color: #3498db;
-            font-weight: bold;
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            font-weight: 600;
         }
 
         .tab-content {
             display: none;
+            background-color: white;
+            padding: 20px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         .tab-content.active {
             display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Forms */
@@ -77,20 +119,28 @@
 
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: 600;
+            color: var(--dark);
         }
 
-        select, textarea {
+        select, textarea, input[type="text"] {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 16px;
+            transition: border 0.3s;
+        }
+
+        select:focus, textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
         }
 
         textarea {
-            min-height: 100px;
+            min-height: 120px;
             resize: vertical;
         }
 
@@ -106,39 +156,83 @@
 
         .confidence-rating label {
             display: inline-block;
-            width: 30px;
-            height: 30px;
-            line-height: 30px;
+            width: 36px;
+            height: 36px;
+            line-height: 36px;
             text-align: center;
-            background-color: #ecf0f1;
+            background-color: var(--light);
             border-radius: 50%;
             cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .confidence-rating label:hover {
+            background-color: var(--primary);
+            color: white;
         }
 
         .confidence-rating input[type="radio"]:checked + label {
-            background-color: #3498db;
+            background-color: var(--primary);
             color: white;
+            transform: scale(1.1);
         }
 
         .attachment-options {
             display: flex;
             gap: 10px;
             margin-bottom: 10px;
+            flex-wrap: wrap;
         }
 
         button {
             padding: 10px 15px;
-            background-color: #3498db;
+            background-color: var(--primary);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
         }
 
         button:hover {
-            background-color: #2980b9;
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background-color: var(--secondary);
+        }
+
+        button.secondary:hover {
+            background-color: #27ae60;
+        }
+
+        button.danger {
+            background-color: var(--danger);
+        }
+
+        button.danger:hover {
+            background-color: #c0392b;
+        }
+
+        button.warning {
+            background-color: var(--warning);
+        }
+
+        button.warning:hover {
+            background-color: #d35400;
+        }
+
+        button i {
+            font-size: 14px;
         }
 
         #attachmentPreview, #planAttachmentPreview {
@@ -153,8 +247,14 @@
             width: 100px;
             height: 100px;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 6px;
             overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .attachment-thumbnail:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .attachment-thumbnail img {
@@ -167,13 +267,16 @@
             position: absolute;
             top: 2px;
             right: 2px;
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
             padding: 0;
-            background-color: rgba(231, 76, 60, 0.8);
+            background-color: rgba(231, 76, 60, 0.9);
             border-radius: 50%;
             font-size: 12px;
-            line-height: 20px;
+            line-height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* Calculator Styles */
@@ -181,8 +284,9 @@
             max-width: 320px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #2c3e50;
+            background-color: var(--dark);
             border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
         .calculator {
@@ -193,22 +297,24 @@
 
         #calculator-display {
             grid-column: span 4;
-            padding: 10px;
+            padding: 15px;
             text-align: right;
-            background-color: #ecf0f1;
+            background-color: var(--light);
             border-radius: 5px;
             margin-bottom: 10px;
             font-size: 24px;
-            height: 40px;
+            height: 50px;
             overflow: hidden;
+            font-family: 'Courier New', monospace;
         }
 
         #previous-display {
             grid-column: span 4;
             text-align: right;
-            color: #bdc3c7;
+            color: var(--light-gray);
             height: 20px;
             font-size: 14px;
+            font-family: 'Courier New', monospace;
         }
 
         .calculator-btn {
@@ -219,19 +325,41 @@
             cursor: pointer;
             background-color: #34495e;
             color: white;
+            transition: all 0.2s;
+        }
+
+        .calculator-btn:hover {
+            background-color: #3d566e;
+            transform: translateY(-2px);
+        }
+
+        .calculator-btn:active {
+            transform: translateY(0);
         }
 
         .calculator-btn.operation {
-            background-color: #3498db;
+            background-color: var(--primary);
+        }
+
+        .calculator-btn.operation:hover {
+            background-color: var(--primary-dark);
         }
 
         .calculator-btn.equals {
-            background-color: #2ecc71;
+            background-color: var(--secondary);
             grid-column: span 2;
         }
 
+        .calculator-btn.equals:hover {
+            background-color: #27ae60;
+        }
+
         .calculator-btn.clear {
-            background-color: #e74c3c;
+            background-color: var(--danger);
+        }
+
+        .calculator-btn.clear:hover {
+            background-color: #c0392b;
         }
 
         /* Resources Section */
@@ -240,28 +368,42 @@
         }
 
         .resource-category h3 {
-            border-bottom: 2px solid #3498db;
+            border-bottom: 2px solid var(--primary);
             padding-bottom: 5px;
-            color: #2c3e50;
+            color: var(--dark);
+            margin-bottom: 15px;
         }
 
         .resource-item {
             background-color: white;
-            border-radius: 5px;
+            border-radius: 8px;
             padding: 15px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .resource-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
         .resource-item h4 {
             margin-top: 0;
-            color: #3498db;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         /* Notes Section */
         .notes-controls {
             margin-bottom: 20px;
             text-align: center;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
         }
 
         .notes-list {
@@ -272,20 +414,26 @@
 
         .note-card {
             background-color: white;
-            border-radius: 5px;
+            border-radius: 8px;
             padding: 15px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .note-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
         .note-date {
-            color: #7f8c8d;
+            color: var(--gray);
             font-size: 0.9em;
             margin-bottom: 10px;
         }
 
         .note-subject {
             display: inline-block;
-            background-color: #3498db;
+            background-color: var(--primary);
             color: white;
             padding: 3px 8px;
             border-radius: 3px;
@@ -296,6 +444,7 @@
         .note-topic {
             font-weight: bold;
             margin-bottom: 10px;
+            color: var(--dark);
         }
 
         .note-attachments {
@@ -308,10 +457,11 @@
             border-radius: 3px;
             margin-right: 5px;
             margin-bottom: 5px;
+            border: 1px solid #eee;
         }
 
         .note-actions {
-            margin-top: 10px;
+            margin-top: 15px;
             display: flex;
             gap: 10px;
         }
@@ -322,6 +472,7 @@
             padding: 15px;
             background-color: #f8f9fa;
             border-radius: 5px;
+            animation: fadeIn 0.3s ease-in-out;
         }
         
         .edit-form.active {
@@ -334,16 +485,22 @@
             background: white;
             margin-top: 10px;
             touch-action: none;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         
         .canvas-container {
             margin: 15px 0;
         }
         
+        .canvas-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
         .canvas-controls button {
-            margin-right: 10px;
-            padding: 5px 10px;
-            font-size: 14px;
+            margin-right: 0;
         }
         
         /* Improved resources display */
@@ -353,19 +510,21 @@
         
         .topic-resources.active {
             display: block;
+            animation: fadeIn 0.3s ease-in-out;
         }
         
         .resource-highlight {
             background-color: #fffde7;
             padding: 15px;
-            border-radius: 5px;
+            border-radius: 8px;
             margin: 10px 0;
+            border-left: 4px solid var(--warning);
         }
 
         /* Add these new styles for subtopics */
         .subtopic-container {
             margin-top: 10px;
-            border-left: 3px solid #3498db;
+            border-left: 3px solid var(--primary);
             padding-left: 15px;
         }
         
@@ -377,23 +536,275 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            transition: background-color 0.2s;
+        }
+        
+        .subtopic-item:hover {
+            background-color: #e8f4fc;
         }
         
         .subtopic-item select {
             flex-grow: 1;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
         }
         
         .add-subtopic {
             margin-top: 5px;
-            background-color: #2ecc71;
+            background-color: var(--secondary);
+        }
+        
+        .add-subtopic:hover {
+            background-color: #27ae60;
         }
         
         .remove-subtopic {
-            background-color: #e74c3c;
-            padding: 2px 5px;
+            background-color: var(--danger);
+            padding: 5px 8px;
             font-size: 12px;
+            border-radius: 4px;
         }
 
+        /* Progress Meter Styles */
+        .progress-meter {
+            margin: 20px 0;
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .progress-title {
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .progress-percent {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+        
+        /* MCQ Test Styles */
+        .mcq-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .mcq-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .mcq-title {
+            font-size: 1.2rem;
+            color: var(--dark);
+        }
+        
+        .mcq-score {
+            font-weight: bold;
+            background-color: var(--primary);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .mcq-question {
+            margin-bottom: 15px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .mcq-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .mcq-option {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .mcq-option:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .mcq-option.selected {
+            background-color: #e3f2fd;
+            border-color: var(--primary);
+        }
+        
+        .mcq-option.correct {
+            background-color: #e8f5e9;
+            border-color: var(--secondary);
+        }
+        
+        .mcq-option.incorrect {
+            background-color: #ffebee;
+            border-color: var(--danger);
+        }
+        
+        .mcq-option input[type="radio"] {
+            display: none;
+        }
+        
+        .mcq-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .mcq-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
+        }
+        
+        .mcq-feedback.correct {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            display: block;
+        }
+        
+        .mcq-feedback.incorrect {
+            background-color: #ffebee;
+            color: #c62828;
+            display: block;
+        }
+        
+        /* Resources Section Styles */
+        .resource-list {
+            margin-top: 10px;
+        }
+
+        .resource-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background-color: white;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .resource-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        }
+
+        .resource-link {
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s;
+        }
+
+        .resource-link:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        .resource-size {
+            color: var(--gray);
+            font-size: 0.8em;
+        }
+
+        .pdf-icon, .video-icon {
+            font-size: 1.2em;
+        }
+
+        .video-resource {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Loading indicator */
+        .loading-resources {
+            text-align: center;
+            padding: 20px;
+            color: var(--gray);
+        }
+        
+        /* Strength Meter */
+        .strength-meter {
+            margin: 20px 0;
+        }
+        
+        .strength-category {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .strength-label {
+            width: 100px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .strength-bars {
+            flex-grow: 1;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .strength-bar {
+            height: 20px;
+            width: 20px;
+            border-radius: 4px;
+            background-color: #e0e0e0;
+            transition: background-color 0.3s;
+        }
+        
+        .strength-bar.active {
+            background-color: var(--primary);
+        }
+        
+        .strength-bar.strong {
+            background-color: var(--secondary);
+        }
+        
+        .strength-bar.weak {
+            background-color: var(--danger);
+        }
+        
         /* Responsive Design */
         @media (max-width: 768px) {
             .container {
@@ -402,11 +813,13 @@
             
             .tabs {
                 overflow-x: auto;
+                padding: 0 5px;
             }
             
             .tab-btn {
                 padding: 10px 15px;
                 font-size: 14px;
+                white-space: nowrap;
             }
 
             .notes-list {
@@ -416,76 +829,60 @@
             .drawing-canvas {
                 width: 100%;
             }
+            
+            .notes-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .mcq-options {
+                gap: 8px;
+            }
+            
+            .mcq-option {
+                padding: 8px 12px;
+            }
         }
-        /* Resources Section Styles */
-.resource-list {
-    margin-top: 10px;
-}
-
-.resource-item {
-    padding: 10px;
-    margin-bottom: 8px;
-    background-color: #f8f9fa;
-    border-radius: 4px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.resource-link {
-    color: #3498db;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.resource-link:hover {
-    text-decoration: underline;
-}
-
-.resource-size {
-    color: #7f8c8d;
-    font-size: 0.8em;
-}
-
-.pdf-icon, .video-icon {
-    font-size: 1.2em;
-}
-
-.video-resource {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-/* Loading indicator */
-.loading-resources {
-    text-align: center;
-    padding: 20px;
-    color: #7f8c8d;
-}
+        
+        @media (max-width: 480px) {
+            .attachment-options {
+                flex-direction: column;
+            }
+            
+            .attachment-options button {
+                width: 100%;
+            }
+            
+            .note-actions {
+                flex-direction: column;
+            }
+            
+            .note-actions button {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>NEET/JEE Progress Tracker</h1>
+            <h1><i class="fas fa-graduation-cap"></i> NEET/JEE Progress Tracker</h1>
             <div class="date-display" id="currentDate"></div>
         </header>
 
         <div class="tabs">
-            <button class="tab-btn active" data-tab="today">Today's Progress</button>
-            <button class="tab-btn" data-tab="tomorrow">Tomorrow's Plan</button>
-            <button class="tab-btn" data-tab="resources">Study Resources</button>
-            <button class="tab-btn" data-tab="calculator">Calculator</button>
-            <button class="tab-btn" data-tab="notes">My Notes</button>
+            <button class="tab-btn active" data-tab="today"><i class="fas fa-calendar-day"></i> Today's Progress</button>
+            <button class="tab-btn" data-tab="tomorrow"><i class="fas fa-calendar-check"></i> Tomorrow's Plan</button>
+            <button class="tab-btn" data-tab="resources"><i class="fas fa-book"></i> Study Resources</button>
+            <button class="tab-btn" data-tab="calculator"><i class="fas fa-calculator"></i> Calculator</button>
+            <button class="tab-btn" data-tab="notes"><i class="fas fa-sticky-note"></i> My Notes</button>
+            <button class="tab-btn" data-tab="strength"><i class="fas fa-chart-line"></i> Strength Meter</button>
         </div>
 
         <div class="tab-content active" id="today">
             <form id="progressForm">
                 <div class="form-group">
-                    <label for="subject">Subject</label>
+                    <label for="subject"><i class="fas fa-book-open"></i> Subject</label>
                     <select id="subject" required>
                         <option value="">Select Subject</option>
                         <option value="physics">Physics</option>
@@ -496,27 +893,27 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="topic">Main Topic</label>
+                    <label for="topic"><i class="fas fa-tag"></i> Main Topic</label>
                     <select id="topic" required disabled>
                         <option value="">Select Topic</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
-                    <label>Subtopics Covered</label>
+                    <label><i class="fas fa-list-ul"></i> Subtopics Covered</label>
                     <div id="subtopicsContainer" class="subtopic-container">
                         <!-- Subtopic items will be added here dynamically -->
                     </div>
-                    <button type="button" id="addSubtopic" class="add-subtopic">+ Add Subtopic</button>
+                    <button type="button" id="addSubtopic" class="add-subtopic"><i class="fas fa-plus"></i> Add Subtopic</button>
                 </div>
 
                 <div class="form-group">
-                    <label for="learnings">Key Learnings Today</label>
-                    <textarea id="learnings" rows="5" required></textarea>
+                    <label for="learnings"><i class="fas fa-lightbulb"></i> Key Learnings Today</label>
+                    <textarea id="learnings" rows="5" required placeholder="What did you learn today? Any important concepts, formulas, or problem-solving techniques?"></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label>Confidence Level (1-5)</label>
+                    <label><i class="fas fa-brain"></i> Confidence Level (1-5)</label>
                     <div class="confidence-rating">
                         <input type="radio" name="confidence" id="conf1" value="1">
                         <label for="conf1">1</label>
@@ -532,36 +929,36 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Handwritten Notes (Draw below)</label>
+                    <label><i class="fas fa-pencil-alt"></i> Handwritten Notes (Draw below)</label>
                     <div class="canvas-container">
                         <canvas class="drawing-canvas" width="500" height="200"></canvas>
                     </div>
                     <div class="canvas-controls">
-                        <button type="button" class="clear-canvas">Clear</button>
-                        <button type="button" class="save-canvas">Save Drawing</button>
+                        <button type="button" class="clear-canvas"><i class="fas fa-eraser"></i> Clear</button>
+                        <button type="button" class="save-canvas"><i class="fas fa-save"></i> Save Drawing</button>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Attach Notes/Photos</label>
+                    <label><i class="fas fa-paperclip"></i> Attach Notes/Photos</label>
                     <div class="attachment-options">
-                        <button type="button" id="uploadBtn">Upload File</button>
-                        <button type="button" id="cameraBtn">Use Camera</button>
-                        <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
+                        <button type="button" id="uploadBtn"><i class="fas fa-upload"></i> Upload File</button>
+                        <button type="button" id="cameraBtn"><i class="fas fa-camera"></i> Use Camera</button>
+                        <input type="file" id="fileInput" accept="image/*, .pdf" multiple style="display: none;">
                         <video id="cameraView" style="display: none;" autoplay></video>
-                        <button type="button" id="captureBtn" style="display: none;">Capture</button>
+                        <button type="button" id="captureBtn" style="display: none;"><i class="fas fa-camera"></i> Capture</button>
                     </div>
                     <div id="attachmentPreview"></div>
                 </div>
 
-                <button type="submit" class="submit-btn">Save Progress</button>
+                <button type="submit" class="submit-btn"><i class="fas fa-save"></i> Save Progress</button>
             </form>
         </div>
 
         <div class="tab-content" id="tomorrow">
             <form id="planForm">
                 <div class="form-group">
-                    <label for="planSubject">Subject</label>
+                    <label for="planSubject"><i class="fas fa-book-open"></i> Subject</label>
                     <select id="planSubject" required>
                         <option value="">Select Subject</option>
                         <option value="physics">Physics</option>
@@ -572,55 +969,55 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="planTopic">Topic</label>
+                    <label for="planTopic"><i class="fas fa-tag"></i> Topic</label>
                     <select id="planTopic" required disabled>
                         <option value="">Select Topic</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
-                    <label>Subtopics to Cover</label>
+                    <label><i class="fas fa-list-ul"></i> Subtopics to Cover</label>
                     <div id="planSubtopicsContainer" class="subtopic-container">
                         <!-- Subtopic items will be added here dynamically -->
                     </div>
-                    <button type="button" id="addPlanSubtopic" class="add-subtopic">+ Add Subtopic</button>
+                    <button type="button" id="addPlanSubtopic" class="add-subtopic"><i class="fas fa-plus"></i> Add Subtopic</button>
                 </div>
 
                 <div class="form-group">
-                    <label for="studyGoals">Study Goals</label>
-                    <textarea id="studyGoals" rows="5" required></textarea>
+                    <label for="studyGoals"><i class="fas fa-bullseye"></i> Study Goals</label>
+                    <textarea id="studyGoals" rows="5" required placeholder="What do you plan to study tomorrow? Be specific about concepts and problems you want to focus on."></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label>Handwritten Notes (Draw below)</label>
+                    <label><i class="fas fa-pencil-alt"></i> Handwritten Notes (Draw below)</label>
                     <div class="canvas-container">
                         <canvas class="drawing-canvas" width="500" height="200"></canvas>
                     </div>
                     <div class="canvas-controls">
-                        <button type="button" class="clear-canvas">Clear</button>
-                        <button type="button" class="save-canvas">Save Drawing</button>
+                        <button type="button" class="clear-canvas"><i class="fas fa-eraser"></i> Clear</button>
+                        <button type="button" class="save-canvas"><i class="fas fa-save"></i> Save Drawing</button>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Attach Plan/Syllabus</label>
+                    <label><i class="fas fa-paperclip"></i> Attach Plan/Syllabus</label>
                     <div class="attachment-options">
-                        <button type="button" id="planUploadBtn">Upload File</button>
-                        <button type="button" id="planCameraBtn">Use Camera</button>
-                        <input type="file" id="planFileInput" accept="image/*" multiple style="display: none;">
+                        <button type="button" id="planUploadBtn"><i class="fas fa-upload"></i> Upload File</button>
+                        <button type="button" id="planCameraBtn"><i class="fas fa-camera"></i> Use Camera</button>
+                        <input type="file" id="planFileInput" accept="image/*, .pdf" multiple style="display: none;">
                         <video id="planCameraView" style="display: none;" autoplay></video>
-                        <button type="button" id="planCaptureBtn" style="display: none;">Capture</button>
+                        <button type="button" id="planCaptureBtn" style="display: none;"><i class="fas fa-camera"></i> Capture</button>
                     </div>
                     <div id="planAttachmentPreview"></div>
                 </div>
 
-                <button type="submit" class="submit-btn">Save Plan</button>
+                <button type="submit" class="submit-btn"><i class="fas fa-save"></i> Save Plan</button>
             </form>
         </div>
 
         <div class="tab-content" id="resources">
             <div class="form-group">
-                <label for="resourceTopic">Select Topic to View Resources</label>
+                <label for="resourceTopic"><i class="fas fa-search"></i> Select Topic to View Resources</label>
                 <select id="resourceTopic">
                     <option value="">-- Select a Topic --</option>
                 </select>
@@ -640,6 +1037,21 @@
             
             <div id="biologyResources" class="topic-resources">
                 <!-- Biology resources will be shown here -->
+            </div>
+            
+            <!-- MCQ Test Section -->
+            <div class="mcq-container" id="mcqTestContainer" style="display: none;">
+                <div class="mcq-header">
+                    <h3 class="mcq-title">MCQ Practice Test</h3>
+                    <div class="mcq-score">Score: <span id="mcqScore">0</span>/<span id="mcqTotal">0</span></div>
+                </div>
+                <div id="mcqQuestionContainer">
+                    <!-- Questions will be loaded here -->
+                </div>
+                <div class="mcq-controls">
+                    <button id="prevMcqBtn" class="secondary" disabled><i class="fas fa-arrow-left"></i> Previous</button>
+                    <button id="nextMcqBtn" class="secondary">Next <i class="fas fa-arrow-right"></i></button>
+                </div>
             </div>
         </div>
 
@@ -683,1226 +1095,1518 @@
 
         <div class="tab-content" id="notes">
             <div class="notes-controls">
-                <button id="generatePdfBtn">Generate PDF Notes</button>
-                <button id="clearNotesBtn">Clear All Notes</button>
+                <button id="generatePdfBtn" class="secondary"><i class="fas fa-file-pdf"></i> Generate PDF Notes</button>
+                <button id="clearNotesBtn" class="danger"><i class="fas fa-trash"></i> Clear All Notes</button>
             </div>
             <div class="notes-list" id="notesList">
                 <!-- Notes will be displayed here -->
             </div>
         </div>
+        
+        <div class="tab-content" id="strength">
+            <div class="strength-meter">
+                <h3><i class="fas fa-chart-line"></i> Subject Strength Analysis</h3>
+                <p>Track your confidence and mastery level across different subjects and topics.</p>
+                
+                <div id="subjectStrengthContainer">
+                    <!-- Strength meters will be added here -->
+                </div>
+                
+                <div class="progress-meter">
+                    <div class="progress-header">
+                        <span class="progress-title">Overall Preparation Progress</span>
+                        <span class="progress-percent" id="overallProgress">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="overallProgressBar" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <button id="updateStrengthBtn" class="secondary"><i class="fas fa-sync-alt"></i> Update Strength Analysis</button>
+            </div>
+        </div>
     </div>
 
     <script>
+        // Topics database (expand with all NCERT
         // Topics database (expand with all NCERT/JEE/NEET topics)
-        const topicsDB = {
-            physics: {
-                "mechanics": ["Kinematics", "Dynamics", "Work, Energy & Power", "Rotational Motion"],
-                "thermodynamics": ["Laws of Thermodynamics", "Heat Transfer", "Thermodynamic Processes"],
-                "electromagnetism": ["Electrostatics", "Current Electricity", "Magnetism", "EMI"]
-            },
-            chemistry: {
-                "physical-chemistry": ["Atomic Structure", "Chemical Bonding", "Thermodynamics", "Equilibrium"],
-                "organic-chemistry": ["Basics", "Hydrocarbons", "Functional Groups", "Polymers"],
-                "inorganic-chemistry": ["Periodic Table", "Coordination Compounds", "Metallurgy"]
-            },
-            mathematics: {
-                "algebra": ["Quadratic Equations", "Progressions", "Permutations & Combinations"],
-                "calculus": ["Limits", "Differentiation", "Integration", "Differential Equations"],
-                "coordinate-geometry": ["Straight Lines", "Circles", "Conic Sections"]
-            },
-            biology: {
-                "botany": ["Plant Anatomy", "Photosynthesis", "Plant Growth"],
-                "zoology": ["Animal Kingdom", "Human Physiology", "Evolution"],
-                "cell-biology": ["Cell Structure", "Biomolecules", "Cell Division"]
-            }
-        };
+const topicsDB = {
+    physics: {
+        "mechanics": ["Kinematics", "Dynamics", "Work, Energy & Power", "Rotational Motion"],
+        "thermodynamics": ["Laws of Thermodynamics", "Heat Transfer", "Thermodynamic Processes"],
+        "electromagnetism": ["Electrostatics", "Current Electricity", "Magnetism", "EMI"]
+    },
+    chemistry: {
+        "physical-chemistry": ["Atomic Structure", "Chemical Bonding", "Thermodynamics", "Equilibrium"],
+        "organic-chemistry": ["Basics", "Hydrocarbons", "Functional Groups", "Polymers"],
+        "inorganic-chemistry": ["Periodic Table", "Coordination Compounds", "Metallurgy"]
+    },
+    mathematics: {
+        "algebra": ["Quadratic Equations", "Progressions", "Permutations & Combinations"],
+        "calculus": ["Limits", "Differentiation", "Integration", "Differential Equations"],
+        "coordinate-geometry": ["Straight Lines", "Circles", "Conic Sections"]
+    },
+    biology: {
+        "botany": ["Plant Anatomy", "Photosynthesis", "Plant Growth"],
+        "zoology": ["Animal Kingdom", "Human Physiology", "Evolution"],
+        "cell-biology": ["Cell Structure", "Biomolecules", "Cell Division"]
+    }
+};
 
-        // Mnemonics database
-        const mnemonicsDB = {
-            physics: {
-                "mechanics": [
-                    "Newton's Laws: 1) Inertia, 2) F=ma, 3) Action-Reaction",
-                    "Projectile Motion: Remember 'UP' - Uₓ is constant, Pₓ = Pᵧ at 45°"
-                ],
-                "thermodynamics": [
-                    "Laws of Thermodynamics: 'You can't win, you can't break even, you can't leave the game'",
-                    "Entropy: 'Disorder increases when you don't clean your room'"
-                ],
-                "electromagnetism": [
-                    "Right Hand Rule: Thumb = current, Fingers = field, Palm = force",
-                    "Lenz's Law: The induced current opposes the change causing it"
-                ]
-            },
-            chemistry: {
-                "periodic-table": [
-                    "Group 1: LiNa Ki Ruby Cse Friendship (Li, Na, K, Rb, Cs, Fr)",
-                    "Noble Gases: He Never Argues; Kr Xe Rolls (He, Ne, Ar, Kr, Xe, Rn)"
-                ],
-                "chemical-bonding": [
-                    "Bond Types: 'Ionic bonds transfer, covalent bonds share'",
-                    "VSEPR Shapes: 'Linear, Trigonal, Tetrahedral - 2, 3, 4 clouds'"
-                ]
-            },
-            biology: {
-                "cell-biology": [
-                    "Mitosis phases: PMAT (Prophase, Metaphase, Anaphase, Telophase)",
-                    "Cell organelles: 'Mrs. Gren' - Movement, Respiration, Sensitivity, Growth, Reproduction, Excretion, Nutrition"
-                ],
-                "genetics": [
-                    "DNA bases: Pure As Gold (Purines - Adenine, Guanine)",
-                    "Central Dogma: DNA → RNA → Protein (Just like Dog → Bark → Woof)"
-                ]
-            }
-        };
+// Mnemonics database
+const mnemonicsDB = {
+    physics: {
+        "mechanics": [
+            "Newton's Laws: 1) Inertia, 2) F=ma, 3) Action-Reaction",
+            "Projectile Motion: Remember 'UP' - Uₓ is constant, Pₓ = Pᵧ at 45°"
+        ],
+        "thermodynamics": [
+            "Laws of Thermodynamics: 'You can't win, you can't break even, you can't leave the game'",
+            "Entropy: 'Disorder increases when you don't clean your room'"
+        ],
+        "electromagnetism": [
+            "Right Hand Rule: Thumb = current, Fingers = field, Palm = force",
+            "Lenz's Law: The induced current opposes the change causing it"
+        ]
+    },
+    chemistry: {
+        "periodic-table": [
+            "Group 1: LiNa Ki Ruby Cse Friendship (Li, Na, K, Rb, Cs, Fr)",
+            "Noble Gases: He Never Argues; Kr Xe Rolls (He, Ne, Ar, Kr, Xe, Rn)"
+        ],
+        "chemical-bonding": [
+            "Bond Types: 'Ionic bonds transfer, covalent bonds share'",
+            "VSEPR Shapes: 'Linear, Trigonal, Tetrahedral - 2, 3, 4 clouds'"
+        ]
+    },
+    biology: {
+        "cell-biology": [
+            "Mitosis phases: PMAT (Prophase, Metaphase, Anaphase, Telophase)",
+            "Cell organelles: 'Mrs. Gren' - Movement, Respiration, Sensitivity, Growth, Reproduction, Excretion, Nutrition"
+        ],
+        "genetics": [
+            "DNA bases: Pure As Gold (Purines - Adenine, Guanine)",
+            "Central Dogma: DNA → RNA → Protein (Just like Dog → Bark → Woof)"
+        ]
+    }
+};
 
-        // Calculator Class
-        class Calculator {
-            constructor() {
-                this.currentInput = '0';
-                this.previousInput = '';
-                this.operation = undefined;
-                this.resetScreen = false;
-            }
-
-            appendNumber(number) {
-                if (this.currentInput === '0' || this.resetScreen) {
-                    this.currentInput = number;
-                    this.resetScreen = false;
-                } else {
-                    this.currentInput += number;
+// MCQ Test Database
+const mcqTests = {
+    physics: {
+        "mechanics": {
+            "Kinematics": [
+                {
+                    question: "A car accelerates uniformly from rest to a speed of 20 m/s in 5 seconds. What is its acceleration?",
+                    options: ["1 m/s²", "2 m/s²", "4 m/s²", "5 m/s²"],
+                    correctAnswer: 2,
+                    explanation: "Using v = u + at, where u=0, v=20 m/s, t=5 s ⇒ a = v/t = 20/5 = 4 m/s²"
+                },
+                {
+                    question: "Which of the following is a vector quantity?",
+                    options: ["Speed", "Distance", "Time", "Displacement"],
+                    correctAnswer: 3,
+                    explanation: "Displacement has both magnitude and direction, making it a vector quantity."
                 }
-            }
-
-            appendDecimal() {
-                if (this.resetScreen) {
-                    this.currentInput = '0.';
-                    this.resetScreen = false;
-                    return;
+            ],
+            "Dynamics": [
+                {
+                    question: "Newton's second law of motion states that:",
+                    options: [
+                        "F = ma",
+                        "Every action has an equal and opposite reaction",
+                        "An object at rest stays at rest",
+                        "Momentum is always conserved"
+                    ],
+                    correctAnswer: 0,
+                    explanation: "Newton's second law is F = ma (Force equals mass times acceleration)."
                 }
-                if (!this.currentInput.includes('.')) {
-                    this.currentInput += '.';
+            ]
+        }
+    },
+    chemistry: {
+        "physical-chemistry": {
+            "Atomic Structure": [
+                {
+                    question: "Which subatomic particle has a negative charge?",
+                    options: ["Proton", "Neutron", "Electron", "Positron"],
+                    correctAnswer: 2,
+                    explanation: "Electrons carry a negative charge, protons are positive, and neutrons are neutral."
                 }
-            }
-
-            handleOperation(op) {
-                if (this.currentInput === '') return;
-                if (this.previousInput !== '') {
-                    this.compute();
+            ]
+        }
+    },
+    biology: {
+        "cell-biology": {
+            "Cell Structure": [
+                {
+                    question: "Which organelle is known as the 'powerhouse of the cell'?",
+                    options: ["Nucleus", "Mitochondria", "Ribosome", "Golgi Apparatus"],
+                    correctAnswer: 1,
+                    explanation: "Mitochondria produce ATP, the cell's energy currency."
                 }
-                this.operation = op;
-                this.previousInput = this.currentInput;
-                this.currentInput = '';
-            }
+            ]
+        }
+    }
+};
 
-            compute() {
-                let computation;
-                const prev = parseFloat(this.previousInput);
-                const current = parseFloat(this.currentInput);
-                if (isNaN(prev)) return;
+// Calculator Class
+class Calculator {
+    constructor() {
+        this.currentInput = '0';
+        this.previousInput = '';
+        this.operation = undefined;
+        this.resetScreen = false;
+    }
 
-                switch (this.operation) {
-                    case '+':
-                        computation = prev + current;
-                        break;
-                    case '-':
-                        computation = prev - current;
-                        break;
-                    case '*':
-                        computation = prev * current;
-                        break;
-                    case '/':
-                        computation = prev / current;
-                        break;
-                    case '^':
-                        computation = Math.pow(prev, current);
-                        break;
-                    case '√':
-                        computation = Math.sqrt(prev);
-                        break;
-                    case 'sin':
-                        computation = Math.sin(prev);
-                        break;
-                    case 'cos':
-                        computation = Math.cos(prev);
-                        break;
-                    case 'tan':
-                        computation = Math.tan(prev);
-                        break;
-                    case 'log':
-                        computation = Math.log10(prev);
-                        break;
-                    default:
-                        return;
-                }
+    appendNumber(number) {
+        if (this.currentInput === '0' || this.resetScreen) {
+            this.currentInput = number;
+            this.resetScreen = false;
+        } else {
+            this.currentInput += number;
+        }
+    }
 
-                this.currentInput = computation.toString();
-                this.operation = undefined;
-                this.previousInput = '';
-            }
+    appendDecimal() {
+        if (this.resetScreen) {
+            this.currentInput = '0.';
+            this.resetScreen = false;
+            return;
+        }
+        if (!this.currentInput.includes('.')) {
+            this.currentInput += '.';
+        }
+    }
 
-            clear() {
-                this.currentInput = '0';
-                this.previousInput = '';
-                this.operation = undefined;
-            }
+    handleOperation(op) {
+        if (this.currentInput === '') return;
+        if (this.previousInput !== '') {
+            this.compute();
+        }
+        this.operation = op;
+        this.previousInput = this.currentInput;
+        this.currentInput = '';
+    }
 
-            delete() {
-                this.currentInput = this.currentInput.toString().slice(0, -1);
-                if (this.currentInput === '') {
-                    this.currentInput = '0';
-                }
-            }
+    compute() {
+        let computation;
+        const prev = parseFloat(this.previousInput);
+        const current = parseFloat(this.currentInput);
+        if (isNaN(prev)) return;
 
-            updateDisplay() {
-                const currentDisplay = document.getElementById('calculator-display');
-                const previousDisplay = document.getElementById('previous-display');
-                
-                currentDisplay.textContent = this.currentInput;
-                if (this.operation != null) {
-                    previousDisplay.textContent = `${this.previousInput} ${this.operation}`;
-                } else {
-                    previousDisplay.textContent = '';
-                }
-            }
+        switch (this.operation) {
+            case '+':
+                computation = prev + current;
+                break;
+            case '-':
+                computation = prev - current;
+                break;
+            case '*':
+                computation = prev * current;
+                break;
+            case '/':
+                computation = prev / current;
+                break;
+            case '^':
+                computation = Math.pow(prev, current);
+                break;
+            case '√':
+                computation = Math.sqrt(prev);
+                break;
+            case 'sin':
+                computation = Math.sin(prev);
+                break;
+            case 'cos':
+                computation = Math.cos(prev);
+                break;
+            case 'tan':
+                computation = Math.tan(prev);
+                break;
+            case 'log':
+                computation = Math.log10(prev);
+                break;
+            default:
+                return;
         }
 
-        // Initialize app
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set current date
-            updateDateDisplay();
-            
-            // Initialize tabs
-            setupTabs();
-            
-            // Initialize forms
-            setupProgressForm();
-            setupPlanForm();
-            
-            // Initialize calculator
-            setupCalculator();
-            
-            // Initialize notes section
-            setupNotesSection();
-            
-            // Setup resources
-            setupResources();
-            
-            // Setup drawing canvases
-            setupDrawingCanvases();
-            
-            // Show today's tab by default
-            document.querySelector('.tab-btn[data-tab="today"]').click();
-            
-            // Check for reminders periodically
-            setInterval(checkReminders, 60000); // Check every minute
-            checkReminders(); // Initial check
-        });
+        this.currentInput = computation.toString();
+        this.operation = undefined;
+        this.previousInput = '';
+    }
 
-        function updateDateDisplay() {
-            const now = new Date();
-            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', {
-                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-            });
+    clear() {
+        this.currentInput = '0';
+        this.previousInput = '';
+        this.operation = undefined;
+    }
+
+    delete() {
+        this.currentInput = this.currentInput.toString().slice(0, -1);
+        if (this.currentInput === '') {
+            this.currentInput = '0';
         }
+    }
 
-        function setupTabs() {
-            const tabBtns = document.querySelectorAll('.tab-btn');
-            tabBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    // Hide all tab contents
-                    document.querySelectorAll('.tab-content').forEach(content => {
-                        content.classList.remove('active');
-                    });
-                    
-                    // Deactivate all tab buttons
-                    tabBtns.forEach(b => b.classList.remove('active'));
-                    
-                    // Activate current tab
-                    btn.classList.add('active');
-                    const tabId = btn.dataset.tab;
-                    document.getElementById(tabId).classList.add('active');
-                    
-                    // Special handling for specific tabs
-                    if (tabId === 'notes') {
-                        displayNotes();
-                    }
-                    else if (tabId === 'calculator') {
-                        calculator.clear();
-                        calculator.updateDisplay();
-                    }
-                });
-            });
+    updateDisplay() {
+        const currentDisplay = document.getElementById('calculator-display');
+        const previousDisplay = document.getElementById('previous-display');
+        
+        currentDisplay.textContent = this.currentInput;
+        if (this.operation != null) {
+            previousDisplay.textContent = `${this.previousInput} ${this.operation}`;
+        } else {
+            previousDisplay.textContent = '';
         }
+    }
+}
 
-        function setupProgressForm() {
-            const subjectSelect = document.getElementById('subject');
-            const topicSelect = document.getElementById('topic');
-            
-            subjectSelect.addEventListener('change', function() {
-                topicSelect.innerHTML = '<option value="">Select Topic</option>';
-                topicSelect.disabled = !this.value;
-                
-                if (this.value) {
-                    Object.keys(topicsDB[this.value]).forEach(topic => {
-                        const option = document.createElement('option');
-                        option.value = topic;
-                        option.textContent = topic.replace(/-/g, ' ');
-                        topicSelect.appendChild(option);
-                    });
-                }
-            });
+// Initialize app
+document.addEventListener('DOMContentLoaded', function() {
+    // Set current date
+    updateDateDisplay();
+    
+    // Initialize tabs
+    setupTabs();
+    
+    // Initialize forms
+    setupProgressForm();
+    setupPlanForm();
+    
+    // Initialize calculator
+    setupCalculator();
+    
+    // Initialize notes section
+    setupNotesSection();
+    
+    // Setup resources
+    setupResources();
+    
+    // Setup drawing canvases
+    setupDrawingCanvases();
+    
+    // Setup strength meter
+    setupStrengthMeter();
+    
+    // Show today's tab by default
+    document.querySelector('.tab-btn[data-tab="today"]').click();
+    
+    // Check for reminders periodically
+    setInterval(checkReminders, 60000); // Check every minute
+    checkReminders(); // Initial check
+});
 
-            // Subtopic management
-            let subtopics = [];
-            
-            function addSubtopicField() {
-                const container = document.getElementById('subtopicsContainer');
-                const subtopicId = Date.now();
-                
-                const div = document.createElement('div');
-                div.className = 'subtopic-item';
-                div.dataset.id = subtopicId;
-                
-                div.innerHTML = `
-                    <select class="subtopic-select">
-                        <option value="">Select Subtopic</option>
-                        ${topicSelect.value ? 
-                            topicsDB[subjectSelect.value][topicSelect.value].map(st => 
-                                `<option value="${st}">${st}</option>`
-                            ).join('') : ''
-                        }
-                    </select>
-                    <button type="button" class="remove-subtopic">×</button>
-                `;
-                
-                div.querySelector('.remove-subtopic').addEventListener('click', function() {
-                    div.remove();
-                    subtopics = subtopics.filter(st => st.id !== subtopicId);
-                });
-                
-                div.querySelector('.subtopic-select').addEventListener('change', function() {
-                    const existing = subtopics.find(st => st.id === subtopicId);
-                    if (existing) {
-                        existing.name = this.value;
-                    } else {
-                        subtopics.push({
-                            id: subtopicId,
-                            name: this.value
-                        });
-                    }
-                });
-                
-                container.appendChild(div);
-            }
+function updateDateDisplay() {
+    const now = new Date();
+    document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+}
 
-            document.getElementById('addSubtopic').addEventListener('click', addSubtopicField);
-
-            // Attachment handling
-            const uploadBtn = document.getElementById('uploadBtn');
-            const cameraBtn = document.getElementById('cameraBtn');
-            const fileInput = document.getElementById('fileInput');
-            const cameraView = document.getElementById('cameraView');
-            const captureBtn = document.getElementById('captureBtn');
-            const previewArea = document.getElementById('attachmentPreview');
-            
-            let attachments = [];
-            
-            uploadBtn.addEventListener('click', () => fileInput.click());
-            
-            fileInput.addEventListener('change', function() {
-                Array.from(this.files).forEach(file => {
-                    if (file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            attachments.push(e.target.result);
-                            displayAttachments();
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                });
+function setupTabs() {
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
             });
             
-            cameraBtn.addEventListener('click', async function() {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    cameraView.srcObject = stream;
-                    cameraView.style.display = 'block';
-                    captureBtn.style.display = 'block';
-                    cameraBtn.style.display = 'none';
-                } catch (err) {
-                    alert('Could not access camera: ' + err.message);
-                }
-            });
+            // Deactivate all tab buttons
+            tabBtns.forEach(b => b.classList.remove('active'));
             
-            captureBtn.addEventListener('click', function() {
-                const canvas = document.createElement('canvas');
-                canvas.width = cameraView.videoWidth;
-                canvas.height = cameraView.videoHeight;
-                canvas.getContext('2d').drawImage(cameraView, 0, 0);
-                
-                attachments.push(canvas.toDataURL('image/jpeg'));
-                displayAttachments();
-                
-                // Stop camera
-                cameraView.srcObject.getTracks().forEach(track => track.stop());
-                cameraView.style.display = 'none';
-                captureBtn.style.display = 'none';
-                cameraBtn.style.display = 'block';
-            });
+            // Activate current tab
+            btn.classList.add('active');
+            const tabId = btn.dataset.tab;
+            document.getElementById(tabId).classList.add('active');
             
-            function displayAttachments() {
-                previewArea.innerHTML = '';
-                attachments.forEach((att, index) => {
-                    const div = document.createElement('div');
-                    div.className = 'attachment-thumbnail';
-                    
-                    const img = document.createElement('img');
-                    img.src = att;
-                    
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.textContent = '×';
-                    deleteBtn.onclick = () => {
-                        attachments.splice(index, 1);
-                        displayAttachments();
-                    };
-                    
-                    div.appendChild(img);
-                    div.appendChild(deleteBtn);
-                    previewArea.appendChild(div);
-                });
-            }
-
-            // Form submission
-            document.getElementById('progressForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const canvas = this.querySelector('.drawing-canvas');
-                const drawingData = !isCanvasEmpty(canvas) ? canvas.toDataURL('image/png') : null;
-                
-                const entry = {
-                    id: Date.now(),
-                    type: 'progress',
-                    date: new Date().toISOString(),
-                    subject: subjectSelect.value,
-                    topic: topicSelect.value,
-                    subtopics: subtopics.filter(st => st.name), // Only include selected subtopics
-                    learnings: document.getElementById('learnings').value,
-                    confidence: document.querySelector('input[name="confidence"]:checked').value,
-                    attachments: [...attachments],
-                    drawing: drawingData
-                };
-                
-                saveEntry(entry);
-                alert('Progress saved with subtopics!');
-                this.reset();
-                subtopics = [];
-                document.getElementById('subtopicsContainer').innerHTML = '';
-                attachments = [];
-                previewArea.innerHTML = '';
+            // Special handling for specific tabs
+            if (tabId === 'notes') {
                 displayNotes();
+            }
+            else if (tabId === 'calculator') {
+                calculator.clear();
+                calculator.updateDisplay();
+            }
+            else if (tabId === 'strength') {
+                updateStrengthMeter();
+            }
+        });
+    });
+}
+
+function setupProgressForm() {
+    const subjectSelect = document.getElementById('subject');
+    const topicSelect = document.getElementById('topic');
+    
+    subjectSelect.addEventListener('change', function() {
+        topicSelect.innerHTML = '<option value="">Select Topic</option>';
+        topicSelect.disabled = !this.value;
+        
+        if (this.value) {
+            Object.keys(topicsDB[this.value]).forEach(topic => {
+                const option = document.createElement('option');
+                option.value = topic;
+                option.textContent = topic.replace(/-/g, ' ');
+                topicSelect.appendChild(option);
             });
         }
+    });
 
-        function setupPlanForm() {
-            const subjectSelect = document.getElementById('planSubject');
-            const topicSelect = document.getElementById('planTopic');
+    // Subtopic management
+    let subtopics = [];
+    
+    function addSubtopicField() {
+        const container = document.getElementById('subtopicsContainer');
+        const subtopicId = Date.now();
+        
+        const div = document.createElement('div');
+        div.className = 'subtopic-item';
+        div.dataset.id = subtopicId;
+        
+        div.innerHTML = `
+            <select class="subtopic-select">
+                <option value="">Select Subtopic</option>
+                ${topicSelect.value ? 
+                    topicsDB[subjectSelect.value][topicSelect.value].map(st => 
+                        `<option value="${st}">${st}</option>`
+                    ).join('') : ''
+                }
+            </select>
+            <button type="button" class="remove-subtopic"><i class="fas fa-times"></i></button>
+        `;
+        
+        div.querySelector('.remove-subtopic').addEventListener('click', function() {
+            div.remove();
+            subtopics = subtopics.filter(st => st.id !== subtopicId);
+        });
+        
+        div.querySelector('.subtopic-select').addEventListener('change', function() {
+            const existing = subtopics.find(st => st.id === subtopicId);
+            if (existing) {
+                existing.name = this.value;
+            } else {
+                subtopics.push({
+                    id: subtopicId,
+                    name: this.value
+                });
+            }
             
-            subjectSelect.addEventListener('change', function() {
-                topicSelect.innerHTML = '<option value="">Select Topic</option>';
-                topicSelect.disabled = !this.value;
-                
-                if (this.value) {
-                    Object.keys(topicsDB[this.value]).forEach(topic => {
-                        const option = document.createElement('option');
-                        option.value = topic;
-                        option.textContent = topic.replace(/-/g, ' ');
-                        topicSelect.appendChild(option);
+            // Check if MCQ test is available for this subtopic
+            checkForMCQTest(subjectSelect.value, topicSelect.value, this.value);
+        });
+        
+        container.appendChild(div);
+    }
+
+    document.getElementById('addSubtopic').addEventListener('click', addSubtopicField);
+
+    // Attachment handling
+    const uploadBtn = document.getElementById('uploadBtn');
+    const cameraBtn = document.getElementById('cameraBtn');
+    const fileInput = document.getElementById('fileInput');
+    const cameraView = document.getElementById('cameraView');
+    const captureBtn = document.getElementById('captureBtn');
+    const previewArea = document.getElementById('attachmentPreview');
+    
+    let attachments = [];
+    
+    uploadBtn.addEventListener('click', () => fileInput.click());
+    
+    fileInput.addEventListener('change', function() {
+        Array.from(this.files).forEach(file => {
+            if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    attachments.push({
+                        type: file.type.startsWith('image/') ? 'image' : 'pdf',
+                        data: e.target.result,
+                        name: file.name,
+                        size: file.size
                     });
+                    displayAttachments();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+    
+    cameraBtn.addEventListener('click', async function() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: {
+                    facingMode: 'environment',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
                 }
             });
-
-            // Subtopic management for plan
-            let planSubtopics = [];
+            cameraView.srcObject = stream;
+            cameraView.style.display = 'block';
+            captureBtn.style.display = 'block';
+            cameraBtn.style.display = 'none';
+        } catch (err) {
+            alert('Could not access camera: ' + err.message);
+        }
+    });
+    
+    captureBtn.addEventListener('click', function() {
+        const canvas = document.createElement('canvas');
+        canvas.width = cameraView.videoWidth;
+        canvas.height = cameraView.videoHeight;
+        canvas.getContext('2d').drawImage(cameraView, 0, 0);
+        
+        attachments.push({
+            type: 'image',
+            data: canvas.toDataURL('image/jpeg'),
+            name: 'camera-capture-' + new Date().toISOString().slice(0, 10) + '.jpg',
+            size: 0
+        });
+        displayAttachments();
+        
+        // Stop camera
+        cameraView.srcObject.getTracks().forEach(track => track.stop());
+        cameraView.style.display = 'none';
+        captureBtn.style.display = 'none';
+        cameraBtn.style.display = 'block';
+    });
+    
+    function displayAttachments() {
+        previewArea.innerHTML = '';
+        attachments.forEach((att, index) => {
+            const div = document.createElement('div');
+            div.className = 'attachment-thumbnail';
             
-            function addPlanSubtopicField() {
-                const container = document.getElementById('planSubtopicsContainer');
-                const subtopicId = Date.now();
-                
-                const div = document.createElement('div');
-                div.className = 'subtopic-item';
-                div.dataset.id = subtopicId;
-                
-                div.innerHTML = `
-                    <select class="subtopic-select">
-                        <option value="">Select Subtopic</option>
-                        ${topicSelect.value ? 
-                            topicsDB[subjectSelect.value][topicSelect.value].map(st => 
-                                `<option value="${st}">${st}</option>`
-                            ).join('') : ''
-                        }
-                    </select>
-                    <button type="button" class="remove-subtopic">×</button>
+            if (att.type === 'image') {
+                const img = document.createElement('img');
+                img.src = att.data;
+                div.appendChild(img);
+            } else {
+                // PDF thumbnail
+                const pdfIcon = document.createElement('div');
+                pdfIcon.style.width = '100%';
+                pdfIcon.style.height = '100%';
+                pdfIcon.style.display = 'flex';
+                pdfIcon.style.flexDirection = 'column';
+                pdfIcon.style.alignItems = 'center';
+                pdfIcon.style.justifyContent = 'center';
+                pdfIcon.style.backgroundColor = '#f5f5f5';
+                pdfIcon.innerHTML = `
+                    <i class="fas fa-file-pdf" style="font-size: 30px; color: #e74c3c;"></i>
+                    <div style="font-size: 10px; margin-top: 5px; text-align: center; word-break: break-all; padding: 0 5px;">${att.name}</div>
                 `;
-                
-                div.querySelector('.remove-subtopic').addEventListener('click', function() {
-                    div.remove();
-                    planSubtopics = planSubtopics.filter(st => st.id !== subtopicId);
-                });
-                
-                div.querySelector('.subtopic-select').addEventListener('change', function() {
-                    const existing = planSubtopics.find(st => st.id === subtopicId);
-                    if (existing) {
-                        existing.name = this.value;
-                    } else {
-                        planSubtopics.push({
-                            id: subtopicId,
-                            name: this.value
-                        });
-                    }
-                });
-                
-                container.appendChild(div);
+                div.appendChild(pdfIcon);
             }
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
+            deleteBtn.onclick = () => {
+                attachments.splice(index, 1);
+                displayAttachments();
+            };
+            
+            div.appendChild(deleteBtn);
+            previewArea.appendChild(div);
+        });
+    }
 
-            document.getElementById('addPlanSubtopic').addEventListener('click', addPlanSubtopicField);
+    // Form submission
+    document.getElementById('progressForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const canvas = this.querySelector('.drawing-canvas');
+        const drawingData = !isCanvasEmpty(canvas) ? canvas.toDataURL('image/png') : null;
+        
+        const entry = {
+            id: Date.now(),
+            type: 'progress',
+            date: new Date().toISOString(),
+            subject: subjectSelect.value,
+            topic: topicSelect.value,
+            subtopics: subtopics.filter(st => st.name), // Only include selected subtopics
+            learnings: document.getElementById('learnings').value,
+            confidence: document.querySelector('input[name="confidence"]:checked').value,
+            attachments: [...attachments],
+            drawing: drawingData
+        };
+        
+        saveEntry(entry);
+        alert('Progress saved successfully!');
+        this.reset();
+        subtopics = [];
+        document.getElementById('subtopicsContainer').innerHTML = '';
+        attachments = [];
+        previewArea.innerHTML = '';
+        displayNotes();
+        updateStrengthMeter();
+    });
+}
 
-            // Attachment handling
-            const uploadBtn = document.getElementById('planUploadBtn');
-            const cameraBtn = document.getElementById('planCameraBtn');
-            const fileInput = document.getElementById('planFileInput');
-            const cameraView = document.getElementById('planCameraView');
-            const captureBtn = document.getElementById('planCaptureBtn');
-            const previewArea = document.getElementById('planAttachmentPreview');
-            
-            let planAttachments = [];
-            
-            uploadBtn.addEventListener('click', () => fileInput.click());
-            
-            fileInput.addEventListener('change', function() {
-    if (this.files && this.files.length > 0) {
+function setupPlanForm() {
+    const subjectSelect = document.getElementById('planSubject');
+    const topicSelect = document.getElementById('planTopic');
+    
+    subjectSelect.addEventListener('change', function() {
+        topicSelect.innerHTML = '<option value="">Select Topic</option>';
+        topicSelect.disabled = !this.value;
+        
+        if (this.value) {
+            Object.keys(topicsDB[this.value]).forEach(topic => {
+                const option = document.createElement('option');
+                option.value = topic;
+                option.textContent = topic.replace(/-/g, ' ');
+                topicSelect.appendChild(option);
+            });
+        }
+    });
+
+    // Subtopic management for plan
+    let planSubtopics = [];
+    
+    function addPlanSubtopicField() {
+        const container = document.getElementById('planSubtopicsContainer');
+        const subtopicId = Date.now();
+        
+        const div = document.createElement('div');
+        div.className = 'subtopic-item';
+        div.dataset.id = subtopicId;
+        
+        div.innerHTML = `
+            <select class="subtopic-select">
+                <option value="">Select Subtopic</option>
+                ${topicSelect.value ? 
+                    topicsDB[subjectSelect.value][topicSelect.value].map(st => 
+                        `<option value="${st}">${st}</option>`
+                    ).join('') : ''
+                }
+            </select>
+            <button type="button" class="remove-subtopic"><i class="fas fa-times"></i></button>
+        `;
+        
+        div.querySelector('.remove-subtopic').addEventListener('click', function() {
+            div.remove();
+            planSubtopics = planSubtopics.filter(st => st.id !== subtopicId);
+        });
+        
+        div.querySelector('.subtopic-select').addEventListener('change', function() {
+            const existing = planSubtopics.find(st => st.id === subtopicId);
+            if (existing) {
+                existing.name = this.value;
+            } else {
+                planSubtopics.push({
+                    id: subtopicId,
+                    name: this.value
+                });
+            }
+        });
+        
+        container.appendChild(div);
+    }
+
+    document.getElementById('addPlanSubtopic').addEventListener('click', addPlanSubtopicField);
+
+    // Attachment handling
+    const uploadBtn = document.getElementById('planUploadBtn');
+    const cameraBtn = document.getElementById('planCameraBtn');
+    const fileInput = document.getElementById('planFileInput');
+    const cameraView = document.getElementById('planCameraView');
+    const captureBtn = document.getElementById('planCaptureBtn');
+    const previewArea = document.getElementById('planAttachmentPreview');
+    
+    let planAttachments = [];
+    
+    uploadBtn.addEventListener('click', () => fileInput.click());
+    
+    fileInput.addEventListener('change', function() {
         Array.from(this.files).forEach(file => {
-            // Check if file is an image and within size limit (e.g., 5MB)
-            if (file.type.startsWith('image/') && file.size <= 5 * 1024 * 1024) {
+            if (file.type.startsWith('image/') || file.type === 'application/pdf') {
                 const reader = new FileReader();
-                
                 reader.onload = function(e) {
                     planAttachments.push({
-                        type: 'upload',
+                        type: file.type.startsWith('image/') ? 'image' : 'pdf',
                         data: e.target.result,
                         name: file.name,
                         size: file.size
                     });
                     displayPlanAttachments();
                 };
-                
-                reader.onerror = function() {
-                    console.error('Error reading file:', file.name);
-                    alert(`Error reading file ${file.name}. Please try another file.`);
-                };
-                
                 reader.readAsDataURL(file);
-            } else if (!file.type.startsWith('image/')) {
-                alert(`File ${file.name} is not an image. Only image files are supported.`);
-            } else {
-                alert(`File ${file.name} is too large. Maximum size is 5MB.`);
             }
         });
-        
-        // Reset the input to allow selecting the same file again
-        this.value = '';
-    }
-});
-
-
-
-
-
-
-
-cameraBtn.addEventListener('click', async function() {
-    try {
-        // First check if we already have a stream running
-        if (cameraView.srcObject) {
-            cameraView.srcObject.getTracks().forEach(track => track.stop());
-        }
-        
-        // Request camera access
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: {
-                facingMode: 'environment', // Prefer rear camera
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            },
-            audio: false
-        });
-        
-        cameraView.srcObject = stream;
-        cameraView.style.display = 'block';
-        captureBtn.style.display = 'block';
-        cameraBtn.style.display = 'none';
-        
-        // Add event listener for when the camera stream ends
-        cameraView.onended = function() {
-            cameraBtn.style.display = 'block';
-            captureBtn.style.display = 'none';
-            cameraView.style.display = 'none';
-        };
-        
-    } catch (err) {
-        console.error('Camera error:', err);
-        
-        // More specific error messages
-        if (err.name === 'NotAllowedError') {
-            alert('Camera access was denied. Please allow camera access to use this feature.');
-        } else if (err.name === 'NotFoundError') {
-            alert('No camera found on this device.');
-        } else if (err.name === 'NotReadableError') {
-            alert('Camera is already in use by another application.');
-        } else {
+    });
+    
+    cameraBtn.addEventListener('click', async function() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: {
+                    facingMode: 'environment',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
+            });
+            cameraView.srcObject = stream;
+            cameraView.style.display = 'block';
+            captureBtn.style.display = 'block';
+            cameraBtn.style.display = 'none';
+        } catch (err) {
             alert('Could not access camera: ' + err.message);
         }
-        
-        // Ensure UI is reset on error
-        cameraBtn.style.display = 'block';
-        captureBtn.style.display = 'none';
-        cameraView.style.display = 'none';
-    }
-});
-            
-            function displayPlanAttachments() {
-                previewArea.innerHTML = '';
-                planAttachments.forEach((att, index) => {
-                    const div = document.createElement('div');
-                    div.className = 'attachment-thumbnail';
-                    
-                    const img = document.createElement('img');
-                    img.src = att;
-                    
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.textContent = '×';
-                    deleteBtn.onclick = () => {
-                        planAttachments.splice(index, 1);
-                        displayPlanAttachments();
-                    };
-                    
-                    div.appendChild(img);
-                    div.appendChild(deleteBtn);
-                    previewArea.appendChild(div);
-                });
-            }
-
-            // Form submission
-            document.getElementById('planForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const canvas = this.querySelector('.drawing-canvas');
-                const drawingData = !isCanvasEmpty(canvas) ? canvas.toDataURL('image/png') : null;
-                
-                const entry = {
-                    id: Date.now(),
-                    type: 'plan',
-                    date: new Date().toISOString(),
-                    subject: subjectSelect.value,
-                    topic: topicSelect.value,
-                    subtopics: planSubtopics.filter(st => st.name),
-                    studyGoals: document.getElementById('studyGoals').value,
-                    attachments: [...planAttachments],
-                    drawing: drawingData
-                };
-                
-                saveEntry(entry);
-                alert('Study plan saved successfully!');
-                this.reset();
-                planSubtopics = [];
-                document.getElementById('planSubtopicsContainer').innerHTML = '';
-                planAttachments = [];
-                previewArea.innerHTML = '';
-                displayNotes();
-            });
-        }
-
-        function saveEntry(entry) {
-            let entries = JSON.parse(localStorage.getItem('studyEntries')) || [];
-            entries.push(entry);
-            localStorage.setItem('studyEntries', JSON.stringify(entries));
-        }
-
-        function displayNotes() {
-            const notesList = document.getElementById('notesList');
-            notesList.innerHTML = '';
-            
-            const entries = JSON.parse(localStorage.getItem('studyEntries')) || [];
-            
-            if (entries.length === 0) {
-                notesList.innerHTML = '<p>No notes found. Start by adding your progress or plans.</p>';
-                return;
-            }
-            
-            // Sort by date (newest first)
-            entries.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            entries.forEach(entry => {
-                const noteCard = document.createElement('div');
-                noteCard.className = 'note-card';
-                noteCard.dataset.id = entry.id;
-                
-                const noteDate = document.createElement('div');
-                noteDate.className = 'note-date';
-                noteDate.textContent = new Date(entry.date).toLocaleString();
-                
-                const noteType = document.createElement('div');
-                noteType.className = 'note-subject';
-                noteType.textContent = entry.type === 'progress' ? 'Progress' : 'Plan';
-                
-                const noteSubject = document.createElement('div');
-                noteSubject.className = 'note-subject';
-                noteSubject.textContent = entry.subject.charAt(0).toUpperCase() + entry.subject.slice(1);
-                
-                const noteTopic = document.createElement('div');
-                noteTopic.className = 'note-topic';
-                noteTopic.textContent = entry.topic;
-                
-                const noteContent = document.createElement('div');
-                noteContent.className = 'note-content';
-                
-                if (entry.type === 'progress') {
-                    const learnings = document.createElement('p');
-                    learnings.textContent = entry.learnings;
-                    
-                    const confidence = document.createElement('p');
-                    confidence.innerHTML = `<strong>Confidence:</strong> ${'★'.repeat(entry.confidence)}`;
-                    
-                    noteContent.appendChild(learnings);
-                    noteContent.appendChild(confidence);
-                } else {
-                    const goals = document.createElement('p');
-                    goals.textContent = entry.studyGoals;
-                    noteContent.appendChild(goals);
-                }
-                
-                // Add subtopics if available
-                if (entry.subtopics && entry.subtopics.length > 0) {
-                    const subtopicsDiv = document.createElement('div');
-                    subtopicsDiv.className = 'note-subtopics';
-                    subtopicsDiv.innerHTML = `
-                        <strong>Subtopics:</strong>
-                        <ul>
-                            ${entry.subtopics.map(st => `<li>${st.name}</li>`).join('')}
-                        </ul>
-                    `;
-                    noteContent.appendChild(subtopicsDiv);
-                }
-                
-                // Add drawing if available
-                if (entry.drawing) {
-                    const drawingDiv = document.createElement('div');
-                    drawingDiv.className = 'note-attachments';
-                    const img = document.createElement('img');
-                    img.src = entry.drawing;
-                    img.style.maxWidth = '100%';
-                    drawingDiv.appendChild(img);
-                    noteContent.appendChild(drawingDiv);
-                }
-                
-                // Add attachments if available
-                if (entry.attachments && entry.attachments.length > 0) {
-                    const attachmentsDiv = document.createElement('div');
-                    attachmentsDiv.className = 'note-attachments';
-                    
-                    entry.attachments.forEach(att => {
-                        const img = document.createElement('img');
-                        img.src = att;
-                        attachmentsDiv.appendChild(img);
-                    });
-                    
-                    noteContent.appendChild(attachmentsDiv);
-                }
-                
-                // Add edit/delete buttons
-                const noteActions = document.createElement('div');
-                noteActions.className = 'note-actions';
-                
-                const editBtn = document.createElement('button');
-                editBtn.textContent = 'Edit';
-                editBtn.onclick = () => showEditForm(entry);
-                
-                const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = 'Delete';
-                deleteBtn.onclick = () => deleteNote(entry.id);
-                
-                noteActions.appendChild(editBtn);
-                noteActions.appendChild(deleteBtn);
-                
-                // Edit form (initially hidden)
-                const editForm = document.createElement('div');
-                editForm.className = 'edit-form';
-                editForm.innerHTML = `
-                    <h4>Edit Note</h4>
-                    <div class="form-group">
-                        <label>Subject</label>
-                        <select class="edit-subject">
-                            <option value="physics" ${entry.subject === 'physics' ? 'selected' : ''}>Physics</option>
-                            <option value="chemistry" ${entry.subject === 'chemistry' ? 'selected' : ''}>Chemistry</option>
-                            <option value="mathematics" ${entry.subject === 'mathematics' ? 'selected' : ''}>Mathematics</option>
-                            <option value="biology" ${entry.subject === 'biology' ? 'selected' : ''}>Biology</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Topic</label>
-                        <select class="edit-topic" disabled>
-                            <option value="">Select Topic</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>${entry.type === 'progress' ? 'Learnings' : 'Study Goals'}</label>
-                        <textarea class="edit-content" rows="5">${entry.type === 'progress' ? entry.learnings : entry.studyGoals}</textarea>
-                    </div>
-                    ${entry.type === 'progress' ? `
-                    <div class="form-group">
-                        <label>Confidence Level (1-5)</label>
-                        <div class="confidence-rating">
-                            <input type="radio" name="edit-confidence" id="edit-conf1" value="1" ${entry.confidence == 1 ? 'checked' : ''}>
-                            <label for="edit-conf1">1</label>
-                            <input type="radio" name="edit-confidence" id="edit-conf2" value="2" ${entry.confidence == 2 ? 'checked' : ''}>
-                            <label for="edit-conf2">2</label>
-                            <input type="radio" name="edit-confidence" id="edit-conf3" value="3" ${entry.confidence == 3 ? 'checked' : ''}>
-                            <label for="edit-conf3">3</label>
-                            <input type="radio" name="edit-confidence" id="edit-conf4" value="4" ${entry.confidence == 4 ? 'checked' : ''}>
-                            <label for="edit-conf4">4</label>
-                            <input type="radio" name="edit-confidence" id="edit-conf5" value="5" ${entry.confidence == 5 ? 'checked' : ''}>
-                            <label for="edit-conf5">5</label>
-                        </div>
-                    </div>
-                    ` : ''}
-                    <button class="save-edit-btn">Save Changes</button>
-                    <button class="cancel-edit-btn">Cancel</button>
-                `;
-                
-                // Initialize topic dropdown in edit form
-                const editSubject = editForm.querySelector('.edit-subject');
-                const editTopic = editForm.querySelector('.edit-topic');
-                
-                editSubject.addEventListener('change', function() {
-                    editTopic.innerHTML = '<option value="">Select Topic</option>';
-                    editTopic.disabled = !this.value;
-                    
-                    if (this.value) {
-                        Object.keys(topicsDB[this.value]).forEach(topic => {
-                            const option = document.createElement('option');
-                            option.value = topic;
-                            option.textContent = topic.replace(/-/g, ' ');
-                            option.selected = (topic === entry.topic);
-                            editTopic.appendChild(option);
-                        });
-                    }
-                });
-                
-                // Trigger change event to populate topics
-                editSubject.dispatchEvent(new Event('change'));
-                
-                // Save edit handler
-                editForm.querySelector('.save-edit-btn').addEventListener('click', () => {
-                    saveEditedNote(entry.id, editForm, entry.type);
-                });
-                
-                // Cancel edit handler
-                editForm.querySelector('.cancel-edit-btn').addEventListener('click', () => {
-                    editForm.classList.remove('active');
-                });
-                
-                noteCard.appendChild(noteDate);
-                noteCard.appendChild(noteType);
-                noteCard.appendChild(noteSubject);
-                noteCard.appendChild(noteTopic);
-                noteCard.appendChild(noteContent);
-                noteCard.appendChild(noteActions);
-                noteCard.appendChild(editForm);
-                
-                notesList.appendChild(noteCard);
-            });
-        }
-        
-        function showEditForm(entry) {
-            // Hide all other edit forms
-            document.querySelectorAll('.edit-form').forEach(form => {
-                form.classList.remove('active');
-            });
-            
-            // Show this entry's edit form
-            const noteCard = document.querySelector(`.note-card[data-id="${entry.id}"]`);
-            if (noteCard) {
-                const editForm = noteCard.querySelector('.edit-form');
-                editForm.classList.add('active');
-                noteCard.scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-        
-        function saveEditedNote(id, editForm, entryType) {
-            const entries = JSON.parse(localStorage.getItem('studyEntries')) || [];
-            const index = entries.findIndex(entry => entry.id === id);
-            
-            if (index !== -1) {
-                const subject = editForm.querySelector('.edit-subject').value;
-                const topic = editForm.querySelector('.edit-topic').value;
-                const content = editForm.querySelector('.edit-content').value;
-                
-                entries[index].subject = subject;
-                entries[index].topic = topic;
-                
-                if (entryType === 'progress') {
-                    entries[index].learnings = content;
-                    entries[index].confidence = parseInt(
-                        editForm.querySelector('input[name="edit-confidence"]:checked').value
-                    );
-                } else {
-                    entries[index].studyGoals = content;
-                }
-                
-                localStorage.setItem('studyEntries', JSON.stringify(entries));
-                editForm.classList.remove('active');
-                displayNotes(); // Refresh the display
-                alert('Note updated successfully!');
-            }
-        }
-        
-        function deleteNote(id) {
-            if (confirm('Are you sure you want to delete this note?')) {
-                const entries = JSON.parse(localStorage.getItem('studyEntries')) || [];
-                const filteredEntries = entries.filter(entry => entry.id !== id);
-                localStorage.setItem('studyEntries', JSON.stringify(filteredEntries));
-                displayNotes(); // Refresh the display
-            }
-        }
-
-        function clearAllNotes() {
-            if (confirm('Are you sure you want to delete ALL notes? This cannot be undone.')) {
-                localStorage.removeItem('studyEntries');
-                displayNotes();
-            }
-        }
-async function fetchGoogleDriveResources(subject, topic, subtopic) {
-    // This is a placeholder for your actual Google Drive API integration
-    // You'll need to implement this based on your Google Drive setup
+    });
     
-    try {
-        // In a real implementation, you would:
-        // 1. Authenticate with Google Drive API
-        // 2. Query files based on subject/topic/subtopic
-        // 3. Return the file information
+    captureBtn.addEventListener('click', function() {
+        const canvas = document.createElement('canvas');
+        canvas.width = cameraView.videoWidth;
+        canvas.height = cameraView.videoHeight;
+        canvas.getContext('2d').drawImage(cameraView, 0, 0);
         
-        // Mock response for demonstration
-        const mockResources = {
-            'physics-mechanics': [
-                {
-                    name: 'Mechanics Formulas.pdf',
-                    url: 'https://drive.google.com/file/d/your-file-id/view',
-                    type: 'pdf',
-                    size: 1024 * 1024 * 2 // 2MB
-                },
-                {
-                    name: 'Kinematics Explained.mp4',
-                    url: 'https://drive.google.com/file/d/your-video-id/view',
-                    type: 'video',
-                    size: 1024 * 1024 * 25 // 25MB
-                }
-            ],
-            // Add more mock resources as needed
+        planAttachments.push({
+            type: 'image',
+            data: canvas.toDataURL('image/jpeg'),
+            name: 'camera-capture-' + new Date().toISOString().slice(0, 10) + '.jpg',
+            size: 0
+        });
+        displayPlanAttachments();
+        
+        // Stop camera
+        cameraView.srcObject.getTracks().forEach(track => track.stop());
+        cameraView.style.display = 'none';
+        captureBtn.style.display = 'none';
+        cameraBtn.style.display = 'block';
+    });
+    
+    function displayPlanAttachments() {
+        previewArea.innerHTML = '';
+        planAttachments.forEach((att, index) => {
+            const div = document.createElement('div');
+            div.className = 'attachment-thumbnail';
+            
+            if (att.type === 'image') {
+                const img = document.createElement('img');
+                img.src = att.data;
+                div.appendChild(img);
+            } else {
+                // PDF thumbnail
+                const pdfIcon = document.createElement('div');
+                pdfIcon.style.width = '100%';
+                pdfIcon.style.height = '100%';
+                pdfIcon.style.display = 'flex';
+                pdfIcon.style.flexDirection = 'column';
+                pdfIcon.style.alignItems = 'center';
+                pdfIcon.style.justifyContent = 'center';
+                pdfIcon.style.backgroundColor = '#f5f5f5';
+                pdfIcon.innerHTML = `
+                    <i class="fas fa-file-pdf" style="font-size: 30px; color: #e74c3c;"></i>
+                    <div style="font-size: 10px; margin-top: 5px; text-align: center; word-break: break-all; padding: 0 5px;">${att.name}</div>
+                `;
+                div.appendChild(pdfIcon);
+            }
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
+            deleteBtn.onclick = () => {
+                planAttachments.splice(index, 1);
+                displayPlanAttachments();
+            };
+            
+            div.appendChild(deleteBtn);
+            previewArea.appendChild(div);
+        });
+    }
+
+    // Form submission
+    document.getElementById('planForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const canvas = this.querySelector('.drawing-canvas');
+        const drawingData = !isCanvasEmpty(canvas) ? canvas.toDataURL('image/png') : null;
+        
+        const entry = {
+            id: Date.now(),
+            type: 'plan',
+            date: new Date().toISOString(),
+            subject: subjectSelect.value,
+            topic: topicSelect.value,
+            subtopics: planSubtopics.filter(st => st.name),
+            studyGoals: document.getElementById('studyGoals').value,
+            attachments: [...planAttachments],
+            drawing: drawingData
         };
         
-        const resourceKey = `${subject}-${topic}`;
-        return mockResources[resourceKey] || [];
+        saveEntry(entry);
+        alert('Study plan saved successfully!');
+        this.reset();
+        planSubtopics = [];
+        document.getElementById('planSubtopicsContainer').innerHTML = '';
+        planAttachments = [];
+        previewArea.innerHTML = '';
+        displayNotes();
+    });
+}
+
+function saveEntry(entry) {
+    let entries = JSON.parse(localStorage.getItem('studyEntries')) || [];
+    entries.push(entry);
+    localStorage.setItem('studyEntries', JSON.stringify(entries));
+}
+
+function displayNotes() {
+    const notesList = document.getElementById('notesList');
+    notesList.innerHTML = '';
+    
+    const entries = JSON.parse(localStorage.getItem('studyEntries')) || [];
+    
+    if (entries.length === 0) {
+        notesList.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--gray);">No notes found. Start by adding your progress or plans.</p>';
+        return;
+    }
+    
+    // Sort by date (newest first)
+    entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    entries.forEach(entry => {
+        const noteCard = document.createElement('div');
+        noteCard.className = 'note-card';
+        noteCard.dataset.id = entry.id;
         
-    } catch (error) {
-        console.error('Error fetching Google Drive resources:', error);
-        return [];
+        const noteDate = document.createElement('div');
+        noteDate.className = 'note-date';
+        noteDate.textContent = new Date(entry.date).toLocaleString();
+        
+        const noteType = document.createElement('div');
+        noteType.className = 'note-subject';
+        noteType.textContent = entry.type === 'progress' ? 'Progress' : 'Plan';
+        
+        const noteSubject = document.createElement('div');
+        noteSubject.className = 'note-subject';
+        noteSubject.textContent = entry.subject.charAt(0).toUpperCase() + entry.subject.slice(1);
+        
+        const noteTopic = document.createElement('div');
+        noteTopic.className = 'note-topic';
+        noteTopic.textContent = entry.topic.replace(/-/g, ' ');
+        
+        const noteContent = document.createElement('div');
+        noteContent.className = 'note-content';
+        
+        if (entry.type === 'progress') {
+            const learnings = document.createElement('p');
+            learnings.textContent = entry.learnings;
+            
+            const confidence = document.createElement('p');
+            confidence.innerHTML = `<strong>Confidence:</strong> ${'★'.repeat(parseInt(entry.confidence))}`;
+            
+            noteContent.appendChild(learnings);
+            noteContent.appendChild(confidence);
+        } else {
+            const goals = document.createElement('p');
+            goals.textContent = entry.studyGoals;
+            noteContent.appendChild(goals);
+        }
+        
+        // Add subtopics if available
+        if (entry.subtopics && entry.subtopics.length > 0) {
+            const subtopicsDiv = document.createElement('div');
+            subtopicsDiv.className = 'note-subtopics';
+            subtopicsDiv.innerHTML = `
+                <strong>Subtopics:</strong>
+                <ul>
+                    ${entry.subtopics.map(st => `<li>${st.name}</li>`).join('')}
+                </ul>
+            `;
+            noteContent.appendChild(subtopicsDiv);
+        }
+        
+        // Add drawing if available
+        if (entry.drawing) {
+            const drawingDiv = document.createElement('div');
+            drawingDiv.className = 'note-attachments';
+            drawingDiv.innerHTML = '<strong>Handwritten Notes:</strong>';
+            const img = document.createElement('img');
+            img.src = entry.drawing;
+            img.style.maxWidth = '100%';
+            img.style.marginTop = '5px';
+            drawingDiv.appendChild(img);
+            noteContent.appendChild(drawingDiv);
+        }
+        
+        // Add attachments if available
+        if (entry.attachments && entry.attachments.length > 0) {
+            const attachmentsDiv = document.createElement('div');
+            attachmentsDiv.className = 'note-attachments';
+            attachmentsDiv.innerHTML = '<strong>Attachments:</strong>';
+            
+            entry.attachments.forEach(att => {
+                if (att.type === 'image') {
+                    const img = document.createElement('img');
+                    img.src = att.data;
+                    attachmentsDiv.appendChild(img);
+                } else {
+                    // PDF attachment
+                    const pdfLink = document.createElement('a');
+                    pdfLink.href = att.data;
+                    pdfLink.target = '_blank';
+                    pdfLink.className = 'resource-link';
+                    pdfLink.style.display = 'inline-flex';
+                    pdfLink.style.alignItems = 'center';
+                    pdfLink.style.margin = '5px';
+                    pdfLink.innerHTML = `
+                        <i class="fas fa-file-pdf" style="color: #e74c3c; margin-right: 5px;"></i>
+                        ${att.name || 'PDF Document'}
+                    `;
+                    attachmentsDiv.appendChild(pdfLink);
+                }
+            });
+            
+            noteContent.appendChild(attachmentsDiv);
+        }
+        
+        // Add edit/delete buttons
+        const noteActions = document.createElement('div');
+        noteActions.className = 'note-actions';
+        
+        const editBtn = document.createElement('button');
+        editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit';
+        editBtn.onclick = () => showEditForm(entry);
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'danger';
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+        deleteBtn.onclick = () => deleteNote(entry.id);
+        
+        noteActions.appendChild(editBtn);
+        noteActions.appendChild(deleteBtn);
+        
+        // Edit form (initially hidden)
+        const editForm = document.createElement('div');
+        editForm.className = 'edit-form';
+        editForm.innerHTML = `
+            <h4><i class="fas fa-edit"></i> Edit Note</h4>
+            <div class="form-group">
+                <label>Subject</label>
+                <select class="edit-subject">
+                    <option value="physics" ${entry.subject === 'physics' ? 'selected' : ''}>Physics</option>
+                    <option value="chemistry" ${entry.subject === 'chemistry' ? 'selected' : ''}>Chemistry</option>
+                    <option value="mathematics" ${entry.subject === 'mathematics' ? 'selected' : ''}>Mathematics</option>
+                    <option value="biology" ${entry.subject === 'biology' ? 'selected' : ''}>Biology</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Topic</label>
+                <select class="edit-topic" disabled>
+                    <option value="">Select Topic</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>${entry.type === 'progress' ? 'Learnings' : 'Study Goals'}</label>
+                <textarea class="edit-content" rows="5">${entry.type === 'progress' ? entry.learnings : entry.studyGoals}</textarea>
+            </div>
+            ${entry.type === 'progress' ? `
+            <div class="form-group">
+                <label>Confidence Level (1-5)</label>
+                <div class="confidence-rating">
+                    <input type="radio" name="edit-confidence" id="edit-conf1" value="1" ${entry.confidence == 1 ? 'checked' : ''}>
+                    <label for="edit-conf1">1</label>
+                    <input type="radio" name="edit-confidence" id="edit-conf2" value="2" ${entry.confidence == 2 ? 'checked' : ''}>
+                    <label for="edit-conf2">2</label>
+                    <input type="radio" name="edit-confidence" id="edit-conf3" value="3" ${entry.confidence == 3 ? 'checked' : ''}>
+                    <label for="edit-conf3">3</label>
+                    <input type="radio" name="edit-confidence" id="edit-conf4" value="4" ${entry.confidence == 4 ? 'checked' : ''}>
+                    <label for="edit-conf4">4</label>
+                    <input type="radio" name="edit-confidence" id="edit-conf5" value="5" ${entry.confidence == 5 ? 'checked' : ''}>
+                    <label for="edit-conf5">5</label>
+                </div>
+            </div>
+            ` : ''}
+            <button class="save-edit-btn secondary"><i class="fas fa-save"></i> Save Changes</button>
+            <button class="cancel-edit-btn"><i class="fas fa-times"></i> Cancel</button>
+        `;
+        
+        // Initialize topic dropdown in edit form
+        const editSubject = editForm.querySelector('.edit-subject');
+        const editTopic = editForm.querySelector('.edit-topic');
+        
+        editSubject.addEventListener('change', function() {
+            editTopic.innerHTML = '<option value="">Select Topic</option>';
+            editTopic.disabled = !this.value;
+            
+            if (this.value) {
+                Object.keys(topicsDB[this.value]).forEach(topic => {
+                    const option = document.createElement('option');
+                    option.value = topic;
+                    option.textContent = topic.replace(/-/g, ' ');
+                    option.selected = (topic === entry.topic);
+                    editTopic.appendChild(option);
+                });
+            }
+        });
+        
+        // Trigger change event to populate topics
+        editSubject.dispatchEvent(new Event('change'));
+        
+        // Save edit handler
+        editForm.querySelector('.save-edit-btn').addEventListener('click', () => {
+            saveEditedNote(entry.id, editForm, entry.type);
+        });
+        
+        // Cancel edit handler
+        editForm.querySelector('.cancel-edit-btn').addEventListener('click', () => {
+            editForm.classList.remove('active');
+        });
+        
+        noteCard.appendChild(noteDate);
+        noteCard.appendChild(noteType);
+        noteCard.appendChild(noteSubject);
+        noteCard.appendChild(noteTopic);
+        noteCard.appendChild(noteContent);
+        noteCard.appendChild(noteActions);
+        noteCard.appendChild(editForm);
+        
+        notesList.appendChild(noteCard);
+    });
+}
+
+function showEditForm(entry) {
+    // Hide all other edit forms
+    document.querySelectorAll('.edit-form').forEach(form => {
+        form.classList.remove('active');
+    });
+    
+    // Show this entry's edit form
+    const noteCard = document.querySelector(`.note-card[data-id="${entry.id}"]`);
+    if (noteCard) {
+        const editForm = noteCard.querySelector('.edit-form');
+        editForm.classList.add('active');
+        noteCard.scrollIntoView({ behavior: 'smooth' });
     }
 }
 
-function formatFileSize(bytes) {
-    if (bytes < 1024) return bytes + ' bytes';
-    else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    else return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+function saveEditedNote(id, editForm, entryType) {
+    const entries = JSON.parse(localStorage.getItem('studyEntries')) || [];
+    const index = entries.findIndex(entry => entry.id === id);
+    
+    if (index !== -1) {
+        const subject = editForm.querySelector('.edit-subject').value;
+        const topic = editForm.querySelector('.edit-topic').value;
+        const content = editForm.querySelector('.edit-content').value;
+        
+        entries[index].subject = subject;
+        entries[index].topic = topic;
+        
+        if (entryType === 'progress') {
+            entries[index].learnings = content;
+            entries[index].confidence = parseInt(
+                editForm.querySelector('input[name="edit-confidence"]:checked').value
+            );
+        } else {
+            entries[index].studyGoals = content;
+        }
+        
+        localStorage.setItem('studyEntries', JSON.stringify(entries));
+        editForm.classList.remove('active');
+        displayNotes(); // Refresh the display
+        updateStrengthMeter();
+        alert('Note updated successfully!');
+    }
 }
-        function generatePDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+
+function deleteNote(id) {
+    if (confirm('Are you sure you want to delete this note?')) {
+        const entries = JSON.parse(localStorage.getItem('studyEntries')) || [];
+        const filteredEntries = entries.filter(entry => entry.id !== id);
+        localStorage.setItem('studyEntries', JSON.stringify(filteredEntries));
+        displayNotes(); // Refresh the display
+        updateStrengthMeter();
+    }
+}
+
+function clearAllNotes() {
+    if (confirm('Are you sure you want to delete ALL notes? This cannot be undone.')) {
+        localStorage.removeItem('studyEntries');
+        displayNotes();
+        updateStrengthMeter();
+    }
+}
+
+function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Get all entries from localStorage
+    const entries = JSON.parse(localStorage.getItem('studyEntries')) || [];
+    
+    if (entries.length === 0) {
+        alert('No study entries found to generate PDF');
+        return;
+    }
+    
+    // Add title page
+    doc.setFontSize(22);
+    doc.text('NEET/JEE Study Notes', 105, 20, { align: 'center' });
+    doc.setFontSize(16);
+    doc.text('Generated on: ' + new Date().toLocaleDateString(), 105, 30, { align: 'center' });
+    doc.addPage();
+    
+    // Group by subject
+    const subjects = {};
+    entries.forEach(entry => {
+        if (!subjects[entry.subject]) {
+            subjects[entry.subject] = [];
+        }
+        subjects[entry.subject].push(entry);
+    });
+    
+    // Add content for each subject
+    Object.entries(subjects).forEach(([subject, entries]) => {
+        doc.addPage();
+        doc.setFontSize(18);
+        doc.text(subject.charAt(0).toUpperCase() + subject.slice(1), 10, 10);
+        doc.setFontSize(12);
+
+
+
+
+
+
+
+
+              let y = 20;
+        entries.forEach((entry, index) => {
+            doc.text(`Date: ${new Date(entry.date).toLocaleDateString()}`, 10, y);
+            y += 7;
+            doc.text(`Type: ${entry.type === 'progress' ? 'Progress' : 'Plan'}`, 10, y);
+            y += 7;
+            doc.text(`Topic: ${entry.topic.replace(/-/g, ' ')}`, 10, y);
+            y += 7;
             
-            // Get all entries from localStorage
-            const entries = JSON.parse(localStorage.getItem('studyEntries')) || [];
-            
-            if (entries.length === 0) {
-                alert('No study entries found to generate PDF');
-                return;
+            if (entry.type === 'progress') {
+                doc.text(`Confidence: ${'★'.repeat(parseInt(entry.confidence))}`, 10, y);
+                y += 7;
             }
             
-            // Group by subject
-            const subjects = {};
-            entries.forEach(entry => {
-                if (!subjects[entry.subject]) {
-                    subjects[entry.subject] = [];
-                }
-                subjects[entry.subject].push(entry);
+            // Split content into multiple lines if needed
+            const content = entry.type === 'progress' ? entry.learnings : entry.studyGoals;
+            const contentLines = doc.splitTextToSize(content, 180);
+            
+            doc.text(`${entry.type === 'progress' ? 'Learnings:' : 'Study Goals:'}`, 10, y);
+            y += 7;
+            contentLines.forEach(line => {
+                doc.text(line, 15, y);
+                y += 7;
             });
             
-            // Add content for each subject
-            Object.entries(subjects).forEach(([subject, entries]) => {
-                doc.addPage();
-                doc.setFontSize(18);
-                doc.text(subject.charAt(0).toUpperCase() + subject.slice(1), 10, 10);
-                doc.setFontSize(12);
+            // Add subtopics if available
+            if (entry.subtopics && entry.subtopics.length > 0) {
+                y += 5;
+                doc.text('Subtopics:', 10, y);
+                y += 7;
                 
-                let y = 20;
-                entries.forEach((entry, index) => {
-                    doc.text(`Date: ${new Date(entry.date).toLocaleDateString()}`, 10, y);
+                entry.subtopics.forEach(subtopic => {
+                    doc.text(`- ${subtopic.name}`, 15, y);
                     y += 7;
-                    doc.text(`Topic: ${entry.topic}`, 10, y);
-                    y += 7;
+                });
+            }
+            
+            // Add drawing if available
+            if (entry.drawing) {
+                y += 5;
+                doc.text('Handwritten Notes:', 10, y);
+                y += 7;
+                
+                try {
+                    const img = new Image();
+                    img.src = entry.drawing;
                     
-                    if (entry.type === 'progress') {
-                        doc.text(`Confidence: ${'★'.repeat(entry.confidence)}`, 10, y);
-                        y += 7;
-                    }
+                    // Add image to PDF (scaled to fit)
+                    const ratio = img.width / img.height;
+                    const width = 180;
+                    const height = width / ratio;
                     
-                    // Split content into multiple lines if needed
-                    const content = entry.type === 'progress' ? entry.learnings : entry.studyGoals;
-                    const contentLines = doc.splitTextToSize(content, 180);
-                    
-                    doc.text(`${entry.type === 'progress' ? 'Learnings:' : 'Study Goals:'}`, 10, y);
-                    y += 7;
-                    contentLines.forEach(line => {
-                        doc.text(line, 15, y);
-                        y += 7;
-                    });
-                    
-                    // Add subtopics if available
-                    if (entry.subtopics && entry.subtopics.length > 0) {
-                        y += 5;
-                        doc.text('Subtopics:', 10, y);
-                        y += 7;
-                        
-                        entry.subtopics.forEach(subtopic => {
-                            doc.text(`- ${subtopic.name}`, 15, y);
-                            y += 7;
-                        });
-                    }
-                    
-                    // Add drawing if available
-                    if (entry.drawing) {
-                        y += 5;
-                        doc.text('Handwritten Notes:', 10, y);
-                        y += 7;
-                        
-                        try {
-                            const img = new Image();
-                            img.src = entry.drawing;
-                            
-                            // Add image to PDF (scaled to fit)
-                            const ratio = img.width / img.height;
-                            const width = 180;
-                            const height = width / ratio;
-                            
-                            doc.addImage(entry.drawing, 'JPEG', 10, y, width, height);
-                            y += height + 5;
-                        } catch (e) {
-                            console.error('Error adding drawing:', e);
-                        }
-                    }
-                    
-                    // Add attachments if available
-                    if (entry.attachments && entry.attachments.length > 0) {
-                        y += 5;
-                        doc.text('Attachments:', 10, y);
-                        y += 7;
-                        
-                        entry.attachments.forEach((imgSrc, imgIndex) => {
-                            if (y > 250) { // Page break if near bottom
-                                doc.addPage();
-                                y = 20;
-                            }
-                            
-                            try {
-                                const img = new Image();
-                                img.src = imgSrc;
-                                
-                                // Add image to PDF (scaled to fit)
-                                const ratio = img.width / img.height;
-                                const width = 100;
-                                const height = width / ratio;
-                                
-                                doc.addImage(imgSrc, 'JPEG', 10, y, width, height);
-                                y += height + 5;
-                            } catch (e) {
-                                console.error('Error adding image:', e);
-                            }
-                        });
-                    }
-                    
-                    // Add space between entries
-                    y += 10;
-                    
-                    // Page break if needed
-                    if (y > 280 && index < entries.length - 1) {
+                    doc.addImage(entry.drawing, 'JPEG', 10, y, width, height);
+                    y += height + 5;
+                } catch (e) {
+                    console.error('Error adding drawing:', e);
+                }
+            }
+            
+            // Add attachments if available
+            if (entry.attachments && entry.attachments.length > 0) {
+                y += 5;
+                doc.text('Attachments:', 10, y);
+                y += 7;
+                
+                entry.attachments.forEach((att, imgIndex) => {
+                    if (y > 250) { // Page break if near bottom
                         doc.addPage();
                         y = 20;
                     }
-                });
-            });
-            
-            // Save the PDF
-            doc.save('neet-jee-study-notes.pdf');
-        }
-
-        function setupResources() {
-            const topicSelect = document.getElementById('resourceTopic');
-            
-            // Populate topic dropdown with subjects and topics
-            for (const subject in topicsDB) {
-                for (const topic in topicsDB[subject]) {
-                    const option = document.createElement('option');
-                    option.value = `${subject}-${topic}`;
-                    option.textContent = `${subject.charAt(0).toUpperCase() + subject.slice(1)}: ${topic.replace(/-/g, ' ')}`;
-                    topicSelect.appendChild(option);
                     
-                    // Add subtopic options
-                    topicsDB[subject][topic].forEach(subtopic => {
-                        const subOption = document.createElement('option');
-                        subOption.value = `${subject}-${topic}-${subtopic.toLowerCase().replace(/\s+/g, '-')}`;
-                        subOption.textContent = `↳ ${subtopic}`;
-                        topicSelect.appendChild(subOption);
+                    if (att.type === 'image') {
+                        try {
+                            const img = new Image();
+                            img.src = att.data;
+                            
+                            // Add image to PDF (scaled to fit)
+                            const ratio = img.width / img.height;
+                            const width = 100;
+                            const height = width / ratio;
+                            
+                            doc.addImage(att.data, 'JPEG', 10, y, width, height);
+                            doc.text(att.name || 'Image', 10, y + height + 5);
+                            y += height + 10;
+                        } catch (e) {
+                            console.error('Error adding image:', e);
+                        }
+                    } else {
+                        // PDF attachment
+                        doc.text(`PDF: ${att.name || 'Document'}`, 10, y);
+                        y += 7;
+                    }
+                });
+            }
+            
+            // Add space between entries
+            y += 10;
+            
+            // Page break if needed
+            if (y > 280 && index < entries.length - 1) {
+                doc.addPage();
+                y = 20;
+            }
+        });
+    });
+    
+    // Save the PDF
+    doc.save('neet-jee-study-notes.pdf');
+}
+
+function setupResources() {
+    const topicSelect = document.getElementById('resourceTopic');
+    
+    // Populate topic dropdown with subjects and topics
+    for (const subject in topicsDB) {
+        const subjectGroup = document.createElement('optgroup');
+        subjectGroup.label = subject.charAt(0).toUpperCase() + subject.slice(1);
+        
+        for (const topic in topicsDB[subject]) {
+            const option = document.createElement('option');
+            option.value = `${subject}-${topic}`;
+            option.textContent = topic.replace(/-/g, ' ');
+            subjectGroup.appendChild(option);
+            
+            // Add subtopic options
+            topicsDB[subject][topic].forEach(subtopic => {
+                const subOption = document.createElement('option');
+                subOption.value = `${subject}-${topic}-${subtopic.toLowerCase().replace(/\s+/g, '-')}`;
+                subOption.textContent = `↳ ${subtopic}`;
+                subjectGroup.appendChild(subOption);
+            });
+        }
+        
+        topicSelect.appendChild(subjectGroup);
+    }
+    
+    // Handle topic selection
+    topicSelect.addEventListener('change', function() {
+        // Hide all resource sections
+        document.querySelectorAll('.topic-resources').forEach(div => {
+            div.classList.remove('active');
+            div.innerHTML = '';
+        });
+        
+        // Hide MCQ test initially
+        document.getElementById('mcqTestContainer').style.display = 'none';
+        
+        if (this.value) {
+            const parts = this.value.split('-');
+            const subject = parts[0];
+            const resourcesDiv = document.getElementById(`${subject}Resources`);
+            
+            if (parts.length === 3) {
+                // Subtopic was selected
+                const topic = parts[1];
+                const subtopic = parts[2].replace(/-/g, ' ');
+                
+                // Add mnemonics for this subtopic if available
+                if (mnemonicsDB[subject] && mnemonicsDB[subject][topic]) {
+                    const mnemonicSection = document.createElement('div');
+                    mnemonicSection.className = 'resource-highlight';
+                    mnemonicSection.innerHTML = `<h4><i class="fas fa-brain"></i> Mnemonics for ${subtopic}</h4>`;
+                    
+                    const mnemonicList = document.createElement('ul');
+                    // Filter mnemonics that mention this subtopic
+                    const relevantMnemonics = mnemonicsDB[subject][topic].filter(m => 
+                        m.toLowerCase().includes(subtopic.toLowerCase()));
+                    
+                    if (relevantMnemonics.length > 0) {
+                        relevantMnemonics.forEach(mnemonic => {
+                            const item = document.createElement('li');
+                            item.textContent = mnemonic;
+                            mnemonicList.appendChild(item);
+                        });
+                        mnemonicSection.appendChild(mnemonicList);
+                        resourcesDiv.appendChild(mnemonicSection);
+                    }
+                }
+                
+                // Add other resources specific to this subtopic
+                const resourceItem = document.createElement('div');
+                resourceItem.className = 'resource-item';
+                resourceItem.innerHTML = `
+                    <h4><i class="fas fa-book"></i> Resources for ${subtopic}</h4>
+                    <p><i class="fas fa-check-circle"></i> Focus on NCERT concepts and practice previous year questions.</p>
+                    <p><i class="fas fa-video"></i> Recommended YouTube channels: Physics Wallah, Unacademy NEET</p>
+                `;
+                resourcesDiv.appendChild(resourceItem);
+                
+                // Check if MCQ test is available for this subtopic
+                if (mcqTests[subject] && mcqTests[subject][topic] && mcqTests[subject][topic][subtopic]) {
+                    const testBtn = document.createElement('button');
+                    testBtn.className = 'secondary';
+                    testBtn.innerHTML = '<i class="fas fa-question-circle"></i> Take MCQ Test on this Subtopic';
+                    testBtn.style.marginTop = '15px';
+                    testBtn.addEventListener('click', () => {
+                        startMCQTest(subject, topic, subtopic);
                     });
+                    resourcesDiv.appendChild(testBtn);
+                }
+            } else {
+                // Main topic was selected
+                const topic = parts[1].replace(/-/g, ' ');
+                
+                // Add mnemonics for this topic if available
+                if (mnemonicsDB[subject] && mnemonicsDB[subject][parts[1]]) {
+                    const mnemonicSection = document.createElement('div');
+                    mnemonicSection.className = 'resource-highlight';
+                    mnemonicSection.innerHTML = `<h4><i class="fas fa-brain"></i> Mnemonics for ${topic}</h4>`;
+                    
+                    const mnemonicList = document.createElement('ul');
+                    mnemonicsDB[subject][parts[1]].forEach(mnemonic => {
+                        const item = document.createElement('li');
+                        item.textContent = mnemonic;
+                        mnemonicList.appendChild(item);
+                    });
+                    
+                    mnemonicSection.appendChild(mnemonicList);
+                    resourcesDiv.appendChild(mnemonicSection);
+                }
+                
+                // Add general resources for this topic
+                const resourceItem = document.createElement('div');
+                resourceItem.className = 'resource-item';
+                resourceItem.innerHTML = `
+                    <h4><i class="fas fa-book"></i> Study Resources for ${topic}</h4>
+                    <p><i class="fas fa-book-open"></i> <strong>NCERT Focus:</strong> Chapters ${topic === 'mechanics' ? '4-8' : 
+                        topic === 'thermodynamics' ? '11-12' : 'All relevant chapters'}</p>
+                    <p><i class="fas fa-book"></i> <strong>Reference Books:</strong> ${subject === 'physics' ? 'HC Verma' : 
+                        subject === 'chemistry' ? 'OP Tondon' : 'RD Sharma'}</p>
+                    <p><i class="fas fa-tasks"></i> <strong>Practice:</strong> Solve at least 50 MCQs on this topic</p>
+                `;
+                resourcesDiv.appendChild(resourceItem);
+                
+                // Add button to see subtopics if available
+                if (topicsDB[subject][parts[1]] && topicsDB[subject][parts[1]].length > 0) {
+                    const subtopicsBtn = document.createElement('button');
+                    subtopicsBtn.className = 'secondary';
+                    subtopicsBtn.innerHTML = '<i class="fas fa-list-ul"></i> View Subtopics';
+                    subtopicsBtn.style.marginTop = '15px';
+                    subtopicsBtn.addEventListener('click', () => {
+                        topicSelect.value = `${subject}-${parts[1]}-${topicsDB[subject][parts[1]][0].toLowerCase().replace(/\s+/g, '-')}`;
+                        topicSelect.dispatchEvent(new Event('change'));
+                    });
+                    resourcesDiv.appendChild(subtopicsBtn);
                 }
             }
             
-            // Handle topic selection
-            topicSelect.addEventListener('change', function() {
-                // Hide all resource sections
-                document.querySelectorAll('.topic-resources').forEach(div => {
-                    div.classList.remove('active');
-                    div.innerHTML = '';
-                });
-                
-                if (this.value) {
-                    const parts = this.value.split('-');
-                    const subject = parts[0];
-                    const resourcesDiv = document.getElementById(`${subject}Resources`);
-                    
-                    if (parts.length === 3) {
-                        // Subtopic was selected
-                        const topic = parts[1];
-                        const subtopic = parts[2].replace(/-/g, ' ');
-                        
-                        // Add mnemonics for this subtopic if available
-                        if (mnemonicsDB[subject] && mnemonicsDB[subject][topic]) {
-                            const mnemonicSection = document.createElement('div');
-                            mnemonicSection.className = 'resource-highlight';
-                            mnemonicSection.innerHTML = `<h4>Mnemonics for ${subtopic}</h4>`;
-                            
-                            const mnemonicList = document.createElement('ul');
-                            // Filter mnemonics that mention this subtopic
-                            const relevantMnemonics = mnemonicsDB[subject][topic].filter(m => 
-                                m.toLowerCase().includes(subtopic.toLowerCase()));
-                            
-                            if (relevantMnemonics.length > 0) {
-                                relevantMnemonics.forEach(mnemonic => {
-                                    const item = document.createElement('li');
-                                    item.textContent = mnemonic;
-                                    mnemonicList.appendChild(item);
-                                });
-                                mnemonicSection.appendChild(mnemonicList);
-                                resourcesDiv.appendChild(mnemonicSection);
-                            }
-                        }
-                        
-                        // Add other resources specific to this subtopic
-                        const resourceItem = document.createElement('div');
-                        resourceItem.className = 'resource-item';
-                        resourceItem.innerHTML = `
-                            <h4>Resources for ${subtopic}</h4>
-                            <p>Focus on NCERT concepts and practice previous year questions.</p>
-                            <p>Recommended YouTube channels: Physics Wallah, Unacademy NEET</p>
-                        `;
-                        resourcesDiv.appendChild(resourceItem);
-                    } else {
-                        // Main topic was selected
-                        const topic = parts[1].replace(/-/g, ' ');
-                        
-                        // Add mnemonics for this topic if available
-                        if (mnemonicsDB[subject] && mnemonicsDB[subject][parts[1]]) {
-                            const mnemonicSection = document.createElement('div');
-                            mnemonicSection.className = 'resource-highlight';
-                            mnemonicSection.innerHTML = `<h4>Mnemonics for ${topic}</h4>`;
-                            
-                            const mnemonicList = document.createElement('ul');
-                            mnemonicsDB[subject][parts[1]].forEach(mnemonic => {
-                                const item = document.createElement('li');
-                                item.textContent = mnemonic;
-                                mnemonicList.appendChild(item);
-                            });
-                            
-                            mnemonicSection.appendChild(mnemonicList);
-                            resourcesDiv.appendChild(mnemonicSection);
-                        }
-                        
-                        // Add general resources for this topic
-                        const resourceItem = document.createElement('div');
-                        resourceItem.className = 'resource-item';
-                        resourceItem.innerHTML = `
-                            <h4>Study Resources for ${topic}</h4>
-                            <p><strong>NCERT Focus:</strong> Chapters ${topic === 'mechanics' ? '4-8' : 
-                                topic === 'thermodynamics' ? '11-12' : 'All relevant chapters'}</p>
-                            <p><strong>Reference Books:</strong> ${subject === 'physics' ? 'HC Verma' : 
-                                subject === 'chemistry' ? 'OP Tondon' : 'RD Sharma'}</p>
-                            <p><strong>Practice:</strong> Solve at least 50 MCQs on this topic</p>
-                        `;
-                        resourcesDiv.appendChild(resourceItem);
-                    }
-                    
-                    resourcesDiv.classList.add('active');
-                }
-            });
+            resourcesDiv.classList.add('active');
         }
-            // 2. Add Google Drive resources
-    try {
-        const driveResources = await fetchGoogleDriveResources(subject, topic, subtopic);
-        if (driveResources.length > 0) {
-            const driveSection = document.createElement('div');
-            driveSection.className = 'resource-highlight';
-            driveSection.innerHTML = `<h4>Google Drive Resources</h4>`;
-            
-            const resourceList = document.createElement('div');
-            resourceList.className = 'resource-list';
-            
-            driveResources.forEach(resource => {
-                const item = document.createElement('div');
-                item.className = 'resource-item';
-                
-                if (resource.type === 'pdf') {
-                    item.innerHTML = `
-                        <a href="${resource.url}" target="_blank" class="resource-link">
-                            <i class="pdf-icon">📄</i> ${resource.name}
-                        </a>
-                        <span class="resource-size">${formatFileSize(resource.size)}</span>
-                    `;
-                } else if (resource.type === 'video') {
-                    item.innerHTML = `
-                        <div class="video-resource">
-                            <a href="${resource.url}" target="_blank" class="resource-link">
-                                <i class="video-icon">🎬</i> ${resource.name}
-                            </a>
-                            <span class="resource-size">${formatFileSize(resource.size)}</span>
-                        </div>
-                    `;
-                }
-                
-                resourceList.appendChild(item);
-            });
-            
-            driveSection.appendChild(resourceList);
-            resourcesDiv.appendChild(driveSection);
-        }
-    } catch (error) {
-        console.error('Error loading Google Drive resources:', error);
+    });
+}
+
+// MCQ Test Functions
+let currentMCQTest = null;
+let currentQuestionIndex = 0;
+let userAnswers = [];
+let mcqScore = 0;
+
+function startMCQTest(subject, topic, subtopic) {
+    currentMCQTest = mcqTests[subject][topic][subtopic];
+    currentQuestionIndex = 0;
+    userAnswers = [];
+    mcqScore = 0;
+    
+    document.getElementById('mcqTestContainer').style.display = 'block';
+    document.getElementById('mcqScore').textContent = '0';
+    document.getElementById('mcqTotal').textContent = currentMCQTest.length;
+    
+    displayMCQQuestion();
+    
+    // Scroll to the test container
+    document.getElementById('mcqTestContainer').scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayMCQQuestion() {
+    const questionContainer = document.getElementById('mcqQuestionContainer');
+    questionContainer.innerHTML = '';
+    
+    if (currentQuestionIndex >= currentMCQTest.length) {
+        // Test completed
+        showMCQResults();
+        return;
     }
+    
+    const question = currentMCQTest[currentQuestionIndex];
+    const questionDiv = document.createElement('div');
+    questionDiv.className = 'mcq-question';
+    questionDiv.textContent = `Q${currentQuestionIndex + 1}: ${question.question}`;
+    questionContainer.appendChild(questionDiv);
+    
+    const optionsDiv = document.createElement('div');
+    optionsDiv.className = 'mcq-options';
+    
+    question.options.forEach((option, index) => {
+        const optionDiv = document.createElement('label');
+        optionDiv.className = 'mcq-option';
+        
+        if (userAnswers[currentQuestionIndex] !== undefined) {
+            if (index === question.correctAnswer) {
+                optionDiv.classList.add('correct');
+            } else if (index === userAnswers[currentQuestionIndex] && index !== question.correctAnswer) {
+                optionDiv.classList.add('incorrect');
+            }
+        }
+        
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'mcqOption';
+        radio.value = index;
+        radio.disabled = userAnswers[currentQuestionIndex] !== undefined;
+        
+        if (userAnswers[currentQuestionIndex] === index) {
+            radio.checked = true;
+        }
+        
+        radio.addEventListener('change', () => {
+            userAnswers[currentQuestionIndex] = index;
+            if (index === question.correctAnswer) {
+                mcqScore++;
+                document.getElementById('mcqScore').textContent = mcqScore;
+            }
+            
+            // Show feedback
+            const feedbackDiv = document.createElement('div');
+            feedbackDiv.className = `mcq-feedback ${index === question.correctAnswer ? 'correct' : 'incorrect'}`;
+            feedbackDiv.innerHTML = `<strong>${index === question.correctAnswer ? 'Correct!' : 'Incorrect'}</strong> ${question.explanation}`;
+            
+            // Remove any existing feedback
+            const existingFeedback = questionContainer.querySelector('.mcq-feedback');
+            if (existingFeedback) {
+                existingFeedback.remove();
+            }
+            
+            questionContainer.appendChild(feedbackDiv);
+            
+            // Disable all options
+            optionsDiv.querySelectorAll('.mcq-option').forEach(opt => {
+                opt.classList.remove('selected');
+                opt.querySelector('input').disabled = true;
+            });
+            
+            // Highlight selected option
+            optionDiv.classList.add('selected');
+        });
+        
+        const optionText = document.createElement('span');
+        optionText.textContent = option;
+        
+        optionDiv.appendChild(radio);
+        optionDiv.appendChild(optionText);
+        optionsDiv.appendChild(optionDiv);
+    });
+    
+    questionContainer.appendChild(optionsDiv);
+    
+    // Update navigation buttons
+    document.getElementById('prevMcqBtn').disabled = currentQuestionIndex === 0;
+    document.getElementById('nextMcqBtn').textContent = currentQuestionIndex === currentMCQTest.length - 1 ? 'Finish' : 'Next';
+}
+
+function showMCQResults() {
+    const questionContainer = document.getElementById('mcqQuestionContainer');
+    questionContainer.innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+            <h3>Test Completed!</h3>
+            <p>Your score: ${mcqScore}/${currentMCQTest.length} (${Math.round((mcqScore / currentMCQTest.length) * 100)}%)</p>
+            <button id="retakeTestBtn" class="secondary" style="margin-top: 15px;">
+                <i class="fas fa-redo"></i> Retake Test
+            </button>
+        </div>
+    `;
+    
+    document.getElementById('retakeTestBtn').addEventListener('click', () => {
+        const parts = document.getElementById('resourceTopic').value.split('-');
+        startMCQTest(parts[0], parts[1], parts[2].replace(/-/g, ' '));
+    });
+}
+
+// Setup MCQ navigation
+document.getElementById('prevMcqBtn').addEventListener('click', () => {
+    if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        displayMCQQuestion();
+    }
+});
+
+document.getElementById('nextMcqBtn').addEventListener('click', () => {
+    if (currentQuestionIndex < currentMCQTest.length - 1) {
+        currentQuestionIndex++;
+        displayMCQQuestion();
+    } else {
+        showMCQResults();
+    }
+});
+
+function checkForMCQTest(subject, topic, subtopic) {
+    if (mcqTests[subject] && mcqTests[subject][topic] && mcqTests[subject][topic][subtopic]) {
+        // Show notification that MCQ test is available
+        const notification = document.createElement('div');
+        notification.className = 'resource-highlight';
+        notification.innerHTML = `
+            <p><i class="fas fa-question-circle"></i> MCQ test available for this subtopic!</p>
+            <button class="secondary" id="startMCQBtn" style="margin-top: 10px;">
+                <i class="fas fa-play"></i> Start Test
+            </button>
+        `;
+        
+        document.getElementById('subtopicsContainer').appendChild(notification);
+        
+        document.getElementById('startMCQBtn').addEventListener('click', () => {
+            startMCQTest(subject, topic, subtopic);
+            notification.remove();
+        });
+    }
+}
+
+function setupCalculator() {
+    const calculator = new Calculator();
+    const calculatorBtns = document.querySelectorAll('.calculator-btn');
+    
+    calculatorBtns.forEach(button => {
+        button.addEventListener('click', () => {
+            if (button.dataset.number) {
+                calculator.appendNumber(button.dataset.number);
+            } else if (button.dataset.decimal) {
+                calculator.appendDecimal();
+            } else if (button.dataset.operation) {
+                calculator.handleOperation(button.dataset.operation);
+            } else if (button.dataset.equals) {
+                calculator.compute();
+            } else if (button.dataset.allClear) {
+                calculator.clear();
+            } else if (button.dataset.delete) {
+                calculator.delete();
+            }
+            
+            calculator.updateDisplay();
+        });
+    });
 }
 
 function setupDrawingCanvases() {
@@ -1999,95 +2703,240 @@ function setupDrawingCanvases() {
     });
 }
 
-        function isCanvasEmpty(canvas) {
-            const blank = document.createElement('canvas');
-            blank.width = canvas.width;
-            blank.height = canvas.height;
-            return canvas.toDataURL() === blank.toDataURL();
-        }
+function isCanvasEmpty(canvas) {
+    const blank = document.createElement('canvas');
+    blank.width = canvas.width;
+    blank.height = canvas.height;
+    return canvas.toDataURL() === blank.toDataURL();
+}
 
-        // Check for revision reminders periodically
-        function checkReminders() {
-            const now = new Date();
-            const hours = now.getHours();
-            const day = now.getDay(); // 0 = Sunday
+function setupStrengthMeter() {
+    document.getElementById('updateStrengthBtn').addEventListener('click', updateStrengthMeter);
+    updateStrengthMeter();
+}
+
+function updateStrengthMeter() {
+    const entries = JSON.parse(localStorage.getItem('studyEntries')) || [];
+    const subjectStrengthContainer = document.getElementById('subjectStrengthContainer');
+    subjectStrengthContainer.innerHTML = '';
+    
+    if (entries.length === 0) {
+        subjectStrengthContainer.innerHTML = '<p style="text-align: center; color: var(--gray);">No study data available. Start tracking your progress to see strength analysis.</p>';
+        document.getElementById('overallProgress').textContent = '0%';
+        document.getElementById('overallProgressBar').style.width = '0%';
+        return;
+    }
+    
+    // Group entries by subject and topic
+    const subjectData = {};
+    let totalConfidence = 0;
+    let totalEntries = 0;
+    
+    entries.forEach(entry => {
+        if (entry.type !== 'progress') return;
+        
+        if (!subjectData[entry.subject]) {
+            subjectData[entry.subject] = {
+                confidenceSum: 0,
+                count: 0,
+                topics: {}
+            };
+        }
+        
+        subjectData[entry.subject].confidenceSum += parseInt(entry.confidence);
+        subjectData[entry.subject].count++;
+        
+        if (!subjectData[entry.subject].topics[entry.topic]) {
+            subjectData[entry.subject].topics[entry.topic] = {
+                confidenceSum: 0,
+                count: 0
+            };
+        }
+        
+        subjectData[entry.subject].topics[entry.topic].confidenceSum += parseInt(entry.confidence);
+        subjectData[entry.subject].topics[entry.topic].count++;
+        
+        totalConfidence += parseInt(entry.confidence);
+        totalEntries++;
+    });
+    
+    // Calculate overall progress (average confidence as percentage)
+    const overallProgress = totalEntries > 0 ? Math.round((totalConfidence / (totalEntries * 5)) * 100) : 0;
+    document.getElementById('overallProgress').textContent = `${overallProgress}%`;
+    document.getElementById('overallProgressBar').style.width = `${overallProgress}%`;
+    
+    // Create strength meters for each subject
+    for (const subject in subjectData) {
+        const subjectDiv = document.createElement('div');
+        subjectDiv.className = 'strength-category';
+        
+        const subjectLabel = document.createElement('div');
+        subjectLabel.className = 'strength-label';
+        subjectLabel.textContent = subject.charAt(0).toUpperCase() + subject.slice(1);
+        
+        const subjectBars = document.createElement('div');
+        subjectBars.className = 'strength-bars';
+        
+        const avgConfidence = Math.round(subjectData[subject].confidenceSum / subjectData[subject].count);
+        
+        for (let i = 1; i <= 5; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'strength-bar';
+            if (i <= avgConfidence) {
+                bar.classList.add('active');
+                if (i >= 4) bar.classList.add('strong');
+                if (i <= 2) bar.classList.add('weak');
+            }
+            subjectBars.appendChild(bar);
+        }
+        
+        subjectDiv.appendChild(subjectLabel);
+        subjectDiv.appendChild(subjectBars);
+        subjectStrengthContainer.appendChild(subjectDiv);
+        
+        // Add topic breakdown for this subject
+        for (const topic in subjectData[subject].topics) {
+            const topicDiv = document.createElement('div');
+            topicDiv.className = 'strength-category';
+            topicDiv.style.marginLeft = '20px';
             
-            // Check for morning revision (8-10 AM)
-            if (hours >= 8 && hours <= 10) {
-                const lastOpened = localStorage.getItem('lastMorningReminder');
-                const today = now.toDateString();
-                
-                if (!lastOpened || lastOpened !== today) {
-                    // Check if there were entries yesterday
-                    const yesterday = new Date();
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    const yesterdayStr = yesterday.toISOString().split('T')[0];
-                    
-                    const entries = JSON.parse(localStorage.getItem('studyEntries')) || [];
-                    const yesterdayEntries = entries.filter(entry => 
-                        entry.date.split('T')[0] === yesterdayStr
-                    );
-                    
-                    if (yesterdayEntries.length > 0) {
-                        alert(`Time to revise! You studied ${yesterdayEntries.length} topics yesterday.`);
-                        localStorage.setItem('lastMorningReminder', today);
-                    }
+            const topicLabel = document.createElement('div');
+            topicLabel.className = 'strength-label';
+            topicLabel.textContent = topic.replace(/-/g, ' ');
+            
+            const topicBars = document.createElement('div');
+            topicBars.className = 'strength-bars';
+            
+            const topicAvgConfidence = Math.round(subjectData[subject].topics[topic].confidenceSum / subjectData[subject].topics[topic].count);
+            
+            for (let i = 1; i <= 5; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'strength-bar';
+                if (i <= topicAvgConfidence) {
+                    bar.classList.add('active');
+                    if (i >= 4) bar.classList.add('strong');
+                    if (i <= 2) bar.classList.add('weak');
                 }
+                topicBars.appendChild(bar);
             }
             
-            // Check for weekend revision (Saturday/Sunday morning)
-            if ((day === 0 || day === 6) && hours >= 8 && hours <= 10) {
-                const lastWeeklyReminder = localStorage.getItem('lastWeeklyReminder');
-                const thisWeek = now.getFullYear() + '-' + getWeekNumber(now);
+            topicDiv.appendChild(topicLabel);
+            topicDiv.appendChild(topicBars);
+            subjectStrengthContainer.appendChild(topicDiv);
+        }
+    }
+}
+
+// Check for revision reminders periodically
+function checkReminders() {
+    const now = new Date();
+    const hours = now.getHours();
+    const day = now.getDay(); // 0 = Sunday
+    
+    // Check for morning revision (8-10 AM)
+    if (hours >= 8 && hours <= 10) {
+        const lastOpened = localStorage.getItem('lastMorningReminder');
+        const today = now.toDateString();
+        
+        if (!lastOpened || lastOpened !== today) {
+            // Check if there were entries yesterday
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+            
+            const entries = JSON.parse(localStorage.getItem('studyEntries')) || [];
+            const yesterdayEntries = entries.filter(entry => 
+                entry.date.split('T')[0] === yesterdayStr
+            );
+            
+            if (yesterdayEntries.length > 0) {
+                // Create a more informative notification
+                const subjects = {};
+                yesterdayEntries.forEach(entry => {
+                    if (!subjects[entry.subject]) {
+                        subjects[entry.subject] = 0;
+                    }
+                    subjects[entry.subject]++;
+                });
                 
-                if (!lastWeeklyReminder || lastWeeklyReminder !== thisWeek) {
-                    const entries = JSON.parse(localStorage.getItem('studyEntries')) || [];
-                    const lastWeekEntries = entries.filter(entry => {
-                        const entryDate = new Date(entry.date);
-                        return isSameWeek(entryDate, now);
+                let message = `Good morning! Time to revise what you studied yesterday:\n\n`;
+                for (const subject in subjects) {
+                    message += `${subject.charAt(0).toUpperCase() + subject.slice(1)}: ${subjects[subject]} topics\n`;
+                }
+                message += `\nSpend 15-20 minutes reviewing these topics.`;
+                
+                alert(message);
+                localStorage.setItem('lastMorningReminder', today);
+            }
+        }
+    }
+    
+    // Check for weekend revision (Saturday/Sunday morning)
+    if ((day === 0 || day === 6) && hours >= 8 && hours <= 10) {
+        const lastWeeklyReminder = localStorage.getItem('lastWeeklyReminder');
+        const thisWeek = now.getFullYear() + '-' + getWeekNumber(now);
+        
+        if (!lastWeeklyReminder || lastWeeklyReminder !== thisWeek) {
+            const entries = JSON.parse(localStorage.getItem('studyEntries')) || [];
+            const lastWeekEntries = entries.filter(entry => {
+                const entryDate = new Date(entry.date);
+                return isSameWeek(entryDate, now);
+            });
+            
+            if (lastWeekEntries.length > 0) {
+                // Group entries by subject for better organization
+                const subjects = {};
+                lastWeekEntries.forEach(entry => {
+                    if (!subjects[entry.subject]) {
+                        subjects[entry.subject] = [];
+                    }
+                    subjects[entry.subject].push(entry);
+                });
+                
+                // Create a more informative notification message
+                let message = `Weekly revision time! You studied ${lastWeekEntries.length} topics this week:\n\n`;
+                
+                Object.entries(subjects).forEach(([subject, entries]) => {
+                    const topics = {};
+                    entries.forEach(entry => {
+                        if (!topics[entry.topic]) {
+                            topics[entry.topic] = true;
+                        }
                     });
                     
-                    if (lastWeekEntries.length > 0) {
-                        // Group entries by subject for better organization
-                        const subjects = {};
-                        lastWeekEntries.forEach(entry => {
-                            if (!subjects[entry.subject]) {
-                                subjects[entry.subject] = [];
-                            }
-                            subjects[entry.subject].push(entry);
-                        });
-                        
-                        // Create a more informative notification message
-                        let message = `Weekly revision time! You studied ${lastWeekEntries.length} topics this week:\n`;
-                        
-                        Object.entries(subjects).forEach(([subject, entries]) => {
-                            message += `\n${subject.charAt(0).toUpperCase() + subject.slice(1)}: ${entries.length} topics`;
-                        });
-                        
-                        message += "\n\nTake time to review these topics today!";
-                        
-                        alert(message);
-                        localStorage.setItem('lastWeeklyReminder', thisWeek);
-                    }
-                }
+                    message += `${subject.charAt(0).toUpperCase() + subject.slice(1)}: ${Object.keys(topics).length} topics\n`;
+                });
+                
+                message += "\nTake time to review these topics today!";
+                
+                alert(message);
+                localStorage.setItem('lastWeeklyReminder', thisWeek);
             }
         }
+    }
+}
 
-        function getWeekNumber(date) {
-            const d = new Date(date);
-            d.setHours(0, 0, 0, 0);
-            d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
-            const week1 = new Date(d.getFullYear(), 0, 4);
-            return 1 + Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
-        }
+function getWeekNumber(date) {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
+    const week1 = new Date(d.getFullYear(), 0, 4);
+    return 1 + Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+}
 
-        function isSameWeek(d1, d2) {
-            return d1.getFullYear() === d2.getFullYear() && 
-                   getWeekNumber(d1) === getWeekNumber(d2);
-        }
+function isSameWeek(d1, d2) {
+    return d1.getFullYear() === d2.getFullYear() && 
+           getWeekNumber(d1) === getWeekNumber(d2);
+}
 
-        // Initialize the calculator
-        const calculator = new Calculator();
-    </script>
+// Initialize the calculator
+const calculator = new Calculator();
+
+// Setup PDF generation button
+document.getElementById('generatePdfBtn').addEventListener('click', generatePDF);
+
+// Setup clear notes button
+document.getElementById('clearNotesBtn').addEventListener('click', clearAllNotes);
+</script>
 </body>
 </html>
