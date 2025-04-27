@@ -309,7 +309,8 @@
             margin-right: 5px;
             margin-bottom: 5px;
         }
-            .note-actions {
+
+        .note-actions {
             margin-top: 10px;
             display: flex;
             gap: 10px;
@@ -327,26 +328,7 @@
             display: block;
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .tabs {
-                overflow-x: auto;
-            }
-            
-            .tab-btn {
-                padding: 10px 15px;
-                font-size: 14px;
-            }
-
-            .notes-list {
-                grid-template-columns: 1fr;
-            }
-        }
-                /* Touch writing styles */
+        /* Touch writing styles */
         .drawing-canvas {
             border: 1px solid #ddd;
             background: white;
@@ -378,6 +360,30 @@
             padding: 15px;
             border-radius: 5px;
             margin: 10px 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .tabs {
+                overflow-x: auto;
+            }
+            
+            .tab-btn {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+
+            .notes-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .drawing-canvas {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -438,6 +444,17 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Handwritten Notes (Draw below)</label>
+                    <div class="canvas-container">
+                        <canvas class="drawing-canvas" width="500" height="200"></canvas>
+                    </div>
+                    <div class="canvas-controls">
+                        <button type="button" class="clear-canvas">Clear</button>
+                        <button type="button" class="save-canvas">Save Drawing</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
                     <label>Attach Notes/Photos</label>
                     <div class="attachment-options">
                         <button type="button" id="uploadBtn">Upload File</button>
@@ -479,6 +496,17 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Handwritten Notes (Draw below)</label>
+                    <div class="canvas-container">
+                        <canvas class="drawing-canvas" width="500" height="200"></canvas>
+                    </div>
+                    <div class="canvas-controls">
+                        <button type="button" class="clear-canvas">Clear</button>
+                        <button type="button" class="save-canvas">Save Drawing</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
                     <label>Attach Plan/Syllabus</label>
                     <div class="attachment-options">
                         <button type="button" id="planUploadBtn">Upload File</button>
@@ -494,202 +522,28 @@
             </form>
         </div>
 
-    <div class="tab-content" id="resources">
-        <div class="form-group">
-            <label for="resourceTopic">Select Topic to View Resources</label>
-            <select id="resourceTopic">
-                <option value="">-- Select a Topic --</option>
-                <!-- Options will be populated by JavaScript -->
-            </select>
-        </div>
-        
-        <div id="physicsResources" class="topic-resources">
-            <!-- Physics resources will be shown here -->
-        </div>
-        
-        <div id="chemistryResources" class="topic-resources">
-            <!-- Chemistry resources will be shown here -->
-        </div>
-        
-        <div id="mathematicsResources" class="topic-resources">
-            <!-- Math resources will be shown here -->
-        </div>
-        
-        <div id="biologyResources" class="topic-resources">
-            <!-- Biology resources will be shown here -->
-        </div>
-    </div>
-
-    <!-- Add this to the progress and plan forms -->
-    <div class="form-group">
-        <label>Handwritten Notes (Draw below)</label>
-        <div class="canvas-container">
-            <canvas class="drawing-canvas" width="500" height="200"></canvas>
-        </div>
-        <div class="canvas-controls">
-            <button class="clear-canvas">Clear</button>
-            <button class="save-canvas">Save Drawing</button>
-        </div>
-    </div>
-
-    <script>
-        // Previous code remains until resources setup
-        
-        // Enhanced mnemonics database with all topics
-        const mnemonicsDB = {
-            physics: {
-                "mechanics": [
-                    "Newton's Laws: 1) Inertia, 2) F=ma, 3) Action-Reaction",
-                    "Projectile Motion: Remember 'UP' - Uₓ is constant, Pₓ = Pᵧ at 45°"
-                ],
-                "thermodynamics": [
-                    "Laws of Thermodynamics: 'You can't win, you can't break even, you can't leave the game'",
-                    "Entropy: 'Disorder increases when you don't clean your room'"
-                ]
-                // Add all physics topics...
-            },
-            chemistry: {
-                "periodic-table": [
-                    "Group 1: LiNa Ki Ruby Cse Friendship (Li, Na, K, Rb, Cs, Fr)",
-                    "Noble Gases: He Never Argues; Kr Xe Rolls (He, Ne, Ar, Kr, Xe, Rn)"
-                ],
-                "chemical-bonding": [
-                    "Bond Types: 'Ionic bonds transfer, covalent bonds share'",
-                    "VSEPR Shapes: 'Linear, Trigonal, Tetrahedral - 2, 3, 4 clouds'"
-                ]
-                // Add all chemistry topics...
-            }
-            // Add all subjects...
-        };
-
-        // Initialize touch drawing canvases
-        function setupDrawingCanvases() {
-            document.querySelectorAll('.drawing-canvas').forEach(canvas => {
-                const signaturePad = new SignaturePad(canvas, {
-                    backgroundColor: 'rgb(255, 255, 255)',
-                    penColor: 'rgb(0, 0, 0)'
-                });
-                
-                // Set appropriate touch behavior
-                canvas.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                }, { passive: false });
-                
-                // Clear button
-                canvas.closest('.form-group').querySelector('.clear-canvas').addEventListener('click', () => {
-                    signaturePad.clear();
-                });
-                
-                // Save button - converts to image and stores with form
-                canvas.closest('.form-group').querySelector('.save-canvas').addEventListener('click', () => {
-                    if (signaturePad.isEmpty()) {
-                        alert('Please draw something first');
-                    } else {
-                        const dataURL = signaturePad.toDataURL();
-                        // This would be saved with your form data
-                        console.log('Saved drawing:', dataURL);
-                        alert('Drawing saved! (Check console for output)');
-                    }
-                });
-            });
-        }
-        
-        // Enhanced resources setup
-        function setupResources() {
-            const topicSelect = document.getElementById('resourceTopic');
-            
-            // Populate topic dropdown
-            for (const subject in topicsDB) {
-                topicsDB[subject].forEach(topic => {
-                    const option = document.createElement('option');
-                    option.value = `${subject}-${topic.toLowerCase().replace(/\s+/g, '-')}`;
-                    option.textContent = `${subject.charAt(0).toUpperCase() + subject.slice(1)}: ${topic}`;
-                    topicSelect.appendChild(option);
-                });
-            }
-            
-            // Handle topic selection
-            topicSelect.addEventListener('change', function() {
-                // Hide all resource sections
-                document.querySelectorAll('.topic-resources').forEach(div => {
-                    div.classList.remove('active');
-                    div.innerHTML = '';
-                });
-                
-                if (this.value) {
-                    const [subject, topic] = this.value.split('-');
-                    const resourcesDiv = document.getElementById(`${subject}Resources`);
-                    
-                    // Add mnemonics
-                    if (mnemonicsDB[subject] && mnemonicsDB[subject][topic]) {
-                        const mnemonicSection = document.createElement('div');
-                        mnemonicSection.className = 'resource-highlight';
-                        mnemonicSection.innerHTML = `<h4>Mnemonics for ${topic.replace(/-/g, ' ')}</h4>`;
-                        
-                        const mnemonicList = document.createElement('ul');
-                        mnemonicsDB[subject][topic].forEach(mnemonic => {
-                            const item = document.createElement('li');
-                            item.textContent = mnemonic;
-                            mnemonicList.appendChild(item);
-                        });
-                        
-                        mnemonicSection.appendChild(mnemonicList);
-                        resourcesDiv.appendChild(mnemonicSection);
-                    }
-                    
-                    // Add other resources (charts, tricky questions)
-                    // You would add these based on your database
-                    
-                    resourcesDiv.classList.add('active');
-                }
-            });
-        }
-        
-        // Update DOMContentLoaded to include new setups
-        document.addEventListener('DOMContentLoaded', function() {
-            // Previous initializations...
-            setupDrawingCanvases();
-            setupResources();
-        });
-        
-        // When saving forms, include the canvas data
-        function getFormDataWithDrawing(form) {
-            const formData = {
-                // Your existing form data
-            };
-            
-            const canvas = form.querySelector('.drawing-canvas');
-            if (canvas && !SignaturePad.getInstance(canvas).isEmpty()) {
-                formData.drawing = SignaturePad.getInstance(canvas).toDataURL();
-            }
-            
-            return formData;
-        }
-
-            <div class="resource-category">
-                <h3>Charts & Diagrams</h3>
-                <div class="resource-item">
-                    <h4>Electromagnetic Spectrum</h4>
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/EM_Spectrum_Properties_edit.svg/1200px-EM_Spectrum_Properties_edit.svg.png" alt="EM Spectrum" style="max-width: 100%;">
-                </div>
-                <div class="resource-item">
-                    <h4>Human Digestive System</h4>
-                    <img src="https://www.visiblebody.com/hubfs/learn/assets/images/website/systems/digestive-system-overview.jpg" alt="Digestive System" style="max-width: 100%;">
-                </div>
+        <div class="tab-content" id="resources">
+            <div class="form-group">
+                <label for="resourceTopic">Select Topic to View Resources</label>
+                <select id="resourceTopic">
+                    <option value="">-- Select a Topic --</option>
+                </select>
             </div>
-
-            <div class="resource-category">
-                <h3>Tricky Questions</h3>
-                <div class="resource-item">
-                    <h4>Physics</h4>
-                    <p><strong>Q:</strong> A particle moves along a circle of radius R with constant angular velocity ω. The magnitude of average acceleration during motion from θ = 0 to θ = π is?</p>
-                    <p><strong>A:</strong> (2√2 Rω²)/π</p>
-                </div>
-                <div class="resource-item">
-                    <h4>Chemistry</h4>
-                    <p><strong>Q:</strong> Which of the following will not give white precipitate with AgNO₃ solution?</p>
-                    <p><strong>A:</strong> [Co(NH₃)₅Cl]Cl₂ (Others like NaCl, KCl, [Co(NH₃)₄Cl₂]Cl do give white ppt)</p>
-                </div>
+            
+            <div id="physicsResources" class="topic-resources">
+                <!-- Physics resources will be shown here -->
+            </div>
+            
+            <div id="chemistryResources" class="topic-resources">
+                <!-- Chemistry resources will be shown here -->
+            </div>
+            
+            <div id="mathematicsResources" class="topic-resources">
+                <!-- Math resources will be shown here -->
+            </div>
+            
+            <div id="biologyResources" class="topic-resources">
+                <!-- Biology resources will be shown here -->
             </div>
         </div>
 
@@ -737,8 +591,6 @@
                 <button id="clearNotesBtn">Clear All Notes</button>
             </div>
             <div class="notes-list" id="notesList">
-
-                
                 <!-- Notes will be displayed here -->
             </div>
         </div>
@@ -767,6 +619,44 @@
                 "Genetics", "Ecology", "Human Physiology", "Biotechnology",
                 "Plant Physiology", "Reproduction", "Evolution", "Human Health"
             ]
+        };
+
+        // Mnemonics database
+        const mnemonicsDB = {
+            physics: {
+                "mechanics": [
+                    "Newton's Laws: 1) Inertia, 2) F=ma, 3) Action-Reaction",
+                    "Projectile Motion: Remember 'UP' - Uₓ is constant, Pₓ = Pᵧ at 45°"
+                ],
+                "thermodynamics": [
+                    "Laws of Thermodynamics: 'You can't win, you can't break even, you can't leave the game'",
+                    "Entropy: 'Disorder increases when you don't clean your room'"
+                ],
+                "electromagnetism": [
+                    "Right Hand Rule: Thumb = current, Fingers = field, Palm = force",
+                    "Lenz's Law: The induced current opposes the change causing it"
+                ]
+            },
+            chemistry: {
+                "periodic-table": [
+                    "Group 1: LiNa Ki Ruby Cse Friendship (Li, Na, K, Rb, Cs, Fr)",
+                    "Noble Gases: He Never Argues; Kr Xe Rolls (He, Ne, Ar, Kr, Xe, Rn)"
+                ],
+                "chemical-bonding": [
+                    "Bond Types: 'Ionic bonds transfer, covalent bonds share'",
+                    "VSEPR Shapes: 'Linear, Trigonal, Tetrahedral - 2, 3, 4 clouds'"
+                ]
+            },
+            biology: {
+                "cell-biology": [
+                    "Mitosis phases: PMAT (Prophase, Metaphase, Anaphase, Telophase)",
+                    "Cell organelles: 'Mrs. Gren' - Movement, Respiration, Sensitivity, Growth, Reproduction, Excretion, Nutrition"
+                ],
+                "genetics": [
+                    "DNA bases: Pure As Gold (Purines - Adenine, Guanine)",
+                    "Central Dogma: DNA → RNA → Protein (Just like Dog → Bark → Woof)"
+                ]
+            }
         };
 
         // Calculator Class
@@ -845,9 +735,6 @@
                     case 'log':
                         computation = Math.log10(prev);
                         break;
-                    case 'ln':
-                        computation = Math.log(prev);
-                        break;
                     default:
                         return;
                 }
@@ -901,9 +788,11 @@
             // Initialize notes section
             setupNotesSection();
             
-            // Set up revision reminders
-            setInterval(checkReminders, 60000);
-            checkReminders();
+            // Setup resources
+            setupResources();
+            
+            // Setup drawing canvases
+            setupDrawingCanvases();
             
             // Show today's tab by default
             document.querySelector('.tab-btn[data-tab="today"]').click();
@@ -1047,6 +936,13 @@
                 const learnings = document.getElementById('learnings').value;
                 const confidence = document.querySelector('input[name="confidence"]:checked').value;
                 
+                // Get drawing data if available
+                const canvas = this.querySelector('.drawing-canvas');
+                let drawingData = null;
+                if (canvas && !canvas.isEmpty()) {
+                    drawingData = canvas.toDataURL();
+                }
+                
                 // Save to localStorage
                 const entry = {
                     id: Date.now(),
@@ -1056,7 +952,8 @@
                     topic,
                     learnings,
                     confidence,
-                    attachments
+                    attachments,
+                    drawing: drawingData
                 };
                 
                 saveEntry(entry);
@@ -1170,6 +1067,13 @@
                 const topic = topicSelect.value;
                 const studyGoals = document.getElementById('studyGoals').value;
                 
+                // Get drawing data if available
+                const canvas = this.querySelector('.drawing-canvas');
+                let drawingData = null;
+                if (canvas && !canvas.isEmpty()) {
+                    drawingData = canvas.toDataURL();
+                }
+                
                 const entry = {
                     id: Date.now(),
                     type: 'plan',
@@ -1177,7 +1081,8 @@
                     subject,
                     topic,
                     studyGoals,
-                    attachments: planAttachments
+                    attachments: planAttachments,
+                    drawing: drawingData
                 };
                 
                 saveEntry(entry);
@@ -1245,7 +1150,7 @@
             displayNotes();
         }
 
-                function displayNotes() {
+        function displayNotes() {
             const notesList = document.getElementById('notesList');
             notesList.innerHTML = '';
             
@@ -1269,7 +1174,7 @@
                 noteDate.textContent = new Date(entry.date).toLocaleString();
                 
                 const noteType = document.createElement('div');
-                noteType.className = 'note-subject';
+                                noteType.className = 'note-subject';
                 noteType.textContent = entry.type === 'progress' ? 'Progress' : 'Plan';
                 
                 const noteSubject = document.createElement('div');
@@ -1296,6 +1201,17 @@
                     const goals = document.createElement('p');
                     goals.textContent = entry.studyGoals;
                     noteContent.appendChild(goals);
+                }
+                
+                // Add drawing if available
+                if (entry.drawing) {
+                    const drawingDiv = document.createElement('div');
+                    drawingDiv.className = 'note-attachments';
+                    const img = document.createElement('img');
+                    img.src = entry.drawing;
+                    img.style.maxWidth = '100%';
+                    drawingDiv.appendChild(img);
+                    noteContent.appendChild(drawingDiv);
                 }
                 
                 // Add attachments if available
@@ -1468,101 +1384,277 @@
             }
         }
 
-function generatePDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    // Get all entries from localStorage
-    const entries = JSON.parse(localStorage.getItem('studyEntries')) || [];
-    
-    if (entries.length === 0) {
-        alert('No study entries found to generate PDF');
-        return;
-    }
-    
-    // Group by subject
-    const subjects = {};
-    entries.forEach(entry => {
-        if (!subjects[entry.subject]) {
-            subjects[entry.subject] = [];
+        function clearAllNotes() {
+            if (confirm('Are you sure you want to delete ALL notes? This cannot be undone.')) {
+                localStorage.removeItem('studyEntries');
+                displayNotes();
+            }
         }
-        subjects[entry.subject].push(entry);
-    });
-    
-    // Add content for each subject
-    Object.entries(subjects).forEach(([subject, entries]) => {
-        doc.addPage();
-        doc.setFontSize(18);
-        doc.text(subject.charAt(0).toUpperCase() + subject.slice(1), 10, 10);
-        doc.setFontSize(12);
-        
-        let y = 20;
-        entries.forEach((entry, index) => {
-            doc.text(`Date: ${new Date(entry.date).toLocaleDateString()}`, 10, y);
-            y += 7;
-            doc.text(`Topic: ${entry.topic}`, 10, y);
-            y += 7;
+
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
             
-            if (entry.type === 'progress') {
-                doc.text(`Confidence: ${'★'.repeat(entry.confidence)}`, 10, y);
-                y += 7;
+            // Get all entries from localStorage
+            const entries = JSON.parse(localStorage.getItem('studyEntries')) || [];
+            
+            if (entries.length === 0) {
+                alert('No study entries found to generate PDF');
+                return;
             }
             
-            // Split content into multiple lines if needed
-            const content = entry.type === 'progress' ? entry.learnings : entry.studyGoals;
-            const contentLines = doc.splitTextToSize(content, 180);
-            
-            doc.text(`${entry.type === 'progress' ? 'Learnings:' : 'Study Goals:'}`, 10, y);
-            y += 7;
-            contentLines.forEach(line => {
-                doc.text(line, 15, y);
-                y += 7;
+            // Group by subject
+            const subjects = {};
+            entries.forEach(entry => {
+                if (!subjects[entry.subject]) {
+                    subjects[entry.subject] = [];
+                }
+                subjects[entry.subject].push(entry);
             });
             
-            // Add images if available
-            if (entry.attachments && entry.attachments.length > 0) {
-                y += 5;
-                doc.text('Attachments:', 10, y);
-                y += 7;
+            // Add content for each subject
+            Object.entries(subjects).forEach(([subject, entries]) => {
+                doc.addPage();
+                doc.setFontSize(18);
+                doc.text(subject.charAt(0).toUpperCase() + subject.slice(1), 10, 10);
+                doc.setFontSize(12);
                 
-                entry.attachments.forEach((imgSrc, imgIndex) => {
-                    if (y > 250) { // Page break if near bottom
+                let y = 20;
+                entries.forEach((entry, index) => {
+                    doc.text(`Date: ${new Date(entry.date).toLocaleDateString()}`, 10, y);
+                    y += 7;
+                    doc.text(`Topic: ${entry.topic}`, 10, y);
+                    y += 7;
+                    
+                    if (entry.type === 'progress') {
+                        doc.text(`Confidence: ${'★'.repeat(entry.confidence)}`, 10, y);
+                        y += 7;
+                    }
+                    
+                    // Split content into multiple lines if needed
+                    const content = entry.type === 'progress' ? entry.learnings : entry.studyGoals;
+                    const contentLines = doc.splitTextToSize(content, 180);
+                    
+                    doc.text(`${entry.type === 'progress' ? 'Learnings:' : 'Study Goals:'}`, 10, y);
+                    y += 7;
+                    contentLines.forEach(line => {
+                        doc.text(line, 15, y);
+                        y += 7;
+                    });
+                    
+                    // Add drawing if available
+                    if (entry.drawing) {
+                        y += 5;
+                        doc.text('Handwritten Notes:', 10, y);
+                        y += 7;
+                        
+                        try {
+                            const img = new Image();
+                            img.src = entry.drawing;
+                            
+                            // Add image to PDF (scaled to fit)
+                            const ratio = img.width / img.height;
+                            const width = 180;
+                            const height = width / ratio;
+                            
+                            doc.addImage(entry.drawing, 'JPEG', 10, y, width, height);
+                            y += height + 5;
+                        } catch (e) {
+                            console.error('Error adding drawing:', e);
+                        }
+                    }
+                    
+                    // Add attachments if available
+                    if (entry.attachments && entry.attachments.length > 0) {
+                        y += 5;
+                        doc.text('Attachments:', 10, y);
+                        y += 7;
+                        
+                        entry.attachments.forEach((imgSrc, imgIndex) => {
+                            if (y > 250) { // Page break if near bottom
+                                doc.addPage();
+                                y = 20;
+                            }
+                            
+                            try {
+                                const img = new Image();
+                                img.src = imgSrc;
+                                
+                                // Add image to PDF (scaled to fit)
+                                const ratio = img.width / img.height;
+                                const width = 100;
+                                const height = width / ratio;
+                                
+                                doc.addImage(imgSrc, 'JPEG', 10, y, width, height);
+                                y += height + 5;
+                            } catch (e) {
+                                console.error('Error adding image:', e);
+                            }
+                        });
+                    }
+                    
+                    // Add space between entries
+                    y += 10;
+                    
+                    // Page break if needed
+                    if (y > 280 && index < entries.length - 1) {
                         doc.addPage();
                         y = 20;
                     }
-                    
-                    try {
-                        const img = new Image();
-                        img.src = imgSrc;
-                        
-                        // Add image to PDF (scaled to fit)
-                        const ratio = img.width / img.height;
-                        const width = 100;
-                        const height = width / ratio;
-                        
-                        doc.addImage(imgSrc, 'JPEG', 10, y, width, height);
-                        y += height + 5;
-                    } catch (e) {
-                        console.error('Error adding image:', e);
-                    }
+                });
+            });
+            
+            // Save the PDF
+            doc.save('neet-jee-study-notes.pdf');
+        }
+
+        function setupResources() {
+            const topicSelect = document.getElementById('resourceTopic');
+            
+            // Populate topic dropdown
+            for (const subject in topicsDB) {
+                topicsDB[subject].forEach(topic => {
+                    const option = document.createElement('option');
+                    option.value = `${subject}-${topic.toLowerCase().replace(/\s+/g, '-')}`;
+                    option.textContent = `${subject.charAt(0).toUpperCase() + subject.slice(1)}: ${topic}`;
+                    topicSelect.appendChild(option);
                 });
             }
             
-            // Add space between entries
-            y += 10;
-            
-            // Page break if needed
-            if (y > 280 && index < entries.length - 1) {
-                doc.addPage();
-                y = 20;
-            }
-        });
-    });
-    
-    // Save the PDF
-    doc.save('neet-jee-study-notes.pdf');
-}
+            // Handle topic selection
+            topicSelect.addEventListener('change', function() {
+                // Hide all resource sections
+                document.querySelectorAll('.topic-resources').forEach(div => {
+                    div.classList.remove('active');
+                    div.innerHTML = '';
+                });
+                
+                if (this.value) {
+                    const [subject, topic] = this.value.split('-');
+                    const resourcesDiv = document.getElementById(`${subject}Resources`);
+                    
+                    // Add mnemonics
+                    if (mnemonicsDB[subject] && mnemonicsDB[subject][topic]) {
+                        const mnemonicSection = document.createElement('div');
+                        mnemonicSection.className = 'resource-highlight';
+                        mnemonicSection.innerHTML = `<h4>Mnemonics for ${topic.replace(/-/g, ' ')}</h4>`;
+                        
+                        const mnemonicList = document.createElement('ul');
+                        mnemonicsDB[subject][topic].forEach(mnemonic => {
+                            const item = document.createElement('li');
+                            item.textContent = mnemonic;
+                            mnemonicList.appendChild(item);
+                        });
+                        
+                        mnemonicSection.appendChild(mnemonicList);
+                        resourcesDiv.appendChild(mnemonicSection);
+                    }
+                    
+                    // Add other resources (charts, tricky questions)
+                    // You would add these based on your database
+                    
+                    resourcesDiv.classList.add('active');
+                }
+            });
+        }
 
+        function setupDrawingCanvases() {
+            document.querySelectorAll('.drawing-canvas').forEach(canvas => {
+                // Initialize canvas context
+                const ctx = canvas.getContext('2d');
+                let isDrawing = false;
+                let lastX = 0;
+                let lastY = 0;
+                
+                // Set canvas styles
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                
+                // Drawing functions
+                function startDrawing(e) {
+                    isDrawing = true;
+                    [lastX, lastY] = getCoordinates(e);
+                }
+                
+                function draw(e) {
+                    if (!isDrawing) return;
+                    
+                    const [x, y] = getCoordinates(e);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(lastX, lastY);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                    
+                    [lastX, lastY] = [x, y];
+                }
+                
+                function stopDrawing() {
+                    isDrawing = false;
+                }
+                
+                function getCoordinates(e) {
+                    const rect = canvas.getBoundingClientRect();
+                    let x, y;
+                    
+                    if (e.type.includes('touch')) {
+                        x = e.touches[0].clientX - rect.left;
+                        y = e.touches[0].clientY - rect.top;
+                    } else {
+                        x = e.clientX - rect.left;
+                        y = e.clientY - rect.top;
+                    }
+                    
+                    return [x, y];
+                }
+                
+                // Event listeners
+                canvas.addEventListener('mousedown', startDrawing);
+                canvas.addEventListener('mousemove', draw);
+                canvas.addEventListener('mouseup', stopDrawing);
+                canvas.addEventListener('mouseout', stopDrawing);
+                
+                // Touch support
+                canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    startDrawing(e.touches[0]);
+                });
+                
+                canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    draw(e.touches[0]);
+                });
+                
+                canvas.addEventListener('touchend', stopDrawing);
+                
+                // Clear button
+                canvas.closest('.form-group').querySelector('.clear-canvas').addEventListener('click', () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                });
+                
+                // Save button - converts to image and stores with form
+                canvas.closest('.form-group').querySelector('.save-canvas').addEventListener('click', () => {
+                    // This will be handled when the form is submitted
+                });
+                
+                // Add method to check if canvas is empty
+                canvas.isEmpty = function() {
+                    const blank = document.createElement('canvas');
+                    blank.width = canvas.width;
+                    blank.height = canvas.height;
+                    return canvas.toDataURL() === blank.toDataURL();
+                };
+                
+                // Add method to get data URL
+                canvas.toDataURL = function(type = 'image/png', quality) {
+                    return this.getContext('2d').canvas.toDataURL(type, quality);
+                };
+            });
+        }
+
+        // Check for revision reminders periodically
         function checkReminders() {
             const now = new Date();
             const hours = now.getHours();
@@ -1641,6 +1733,9 @@ function generatePDF() {
             return d1.getFullYear() === d2.getFullYear() && 
                    getWeekNumber(d1) === getWeekNumber(d2);
         }
+
+        // Initialize the calculator
+        const calculator = new Calculator();
     </script>
 </body>
 </html>
